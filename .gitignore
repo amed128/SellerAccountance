@@ -47,3 +47,6 @@ prisma/dev.db*
 tests/e2e/.pgdata/
 playwright-report/
 test-results/
+
+# local embedded postgres
+.devdb/
