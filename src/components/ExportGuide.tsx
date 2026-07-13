@@ -1,38 +1,11 @@
-const GUIDES = [
-  {
-    name: "Rapport de transactions (plage de dates)",
-    badge: "Recommandé — CA & frais",
-    path: "Seller Central → Menu → Paiements → Référentiel des rapports",
-    steps: "Type de rapport « Transaction », choisissez « Plage de dates personnalisée » ou « Mois », cliquez sur « Générer », puis téléchargez le CSV.",
-  },
-  {
-    name: "Rapport de transactions TVA Amazon",
-    badge: "Recommandé — TVA exacte",
-    path: "Seller Central → Rapports → Bibliothèque de documents fiscaux → Rapport de transactions TVA Amazon",
-    steps: "Sélectionnez le mois puis téléchargez le rapport (généré vers le 5 du mois suivant). C'est le seul rapport avec le détail TVA par pays.",
-  },
-  {
-    name: "Rapport de règlement (settlement)",
-    badge: "Rapprochement bancaire",
-    path: "Seller Central → Menu → Paiements → onglet « Tous les relevés »",
-    steps: "Sur la période voulue, cliquez sur « Télécharger le fichier plat (V2) » (.txt).",
-  },
-  {
-    name: "Vue Transactions (Paiements)",
-    badge: "Résumé simplifié",
-    path: "Seller Central → Menu → Paiements → onglet « Aperçu des transactions »",
-    steps: "Filtrez la période puis « Télécharger » (CSV). Vue simplifiée : les frais FBA y sont fusionnés avec les commissions — préférez le rapport de transactions pour le détail.",
-  },
-];
+import type { Dict } from "@/lib/i18n";
 
-export default function ExportGuide() {
+export default function ExportGuide({ d }: { d: Dict }) {
   return (
-    <details className="mt-4 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
-      <summary className="cursor-pointer font-medium text-blue-600">
-        Où exporter vos fichiers CSV depuis Amazon Seller Central ?
-      </summary>
+    <section>
+      <h2 className="text-lg font-semibold">{d.help.exportTitle}</h2>
       <ul className="mt-3 space-y-3">
-        {GUIDES.map((g) => (
+        {d.help.guide.map((g) => (
           <li key={g.name} className="rounded-lg bg-gray-50 dark:bg-gray-900 p-3">
             <p className="font-medium">
               {g.name}{" "}
@@ -45,6 +18,6 @@ export default function ExportGuide() {
           </li>
         ))}
       </ul>
-    </details>
+    </section>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import type { Dict } from "@/lib/i18n";
 
 const MAX_FILES = 10;
 
@@ -16,7 +17,7 @@ function fmtSize(bytes: number) {
   return bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(0)} Ko` : `${(bytes / 1024 / 1024).toFixed(1)} Mo`;
 }
 
-export default function UploadForm() {
+export default function UploadForm({ d }: { d: Dict["upload"] }) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<File[]>([]);
@@ -35,7 +36,7 @@ export default function UploadForm() {
         merged.push(f);
       }
       if (merged.length > MAX_FILES) {
-        setError(`Maximum ${MAX_FILES} fichiers par génération — seuls les ${MAX_FILES} premiers sont conservés.`);
+        setError(d.maxFiles.replaceAll("{n}", String(MAX_FILES)));
         return merged.slice(0, MAX_FILES);
       }
       return merged;
@@ -57,7 +58,7 @@ export default function UploadForm() {
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       const json = await res.json();
       if (!res.ok && !json.results) {
-        setError(json.error ?? "Erreur inconnue.");
+        setError(json.error ?? d.unknownError);
         return;
       }
       const all: FileResult[] = json.results ?? [];
@@ -69,7 +70,7 @@ export default function UploadForm() {
       }
       router.refresh();
     } catch {
-      setError("Erreur réseau — vérifiez votre connexion et réessayez.");
+      setError(d.networkError);
     } finally {
       setBusy(false);
     }
@@ -101,10 +102,8 @@ export default function UploadForm() {
             e.target.value = "";
           }}
         />
-        <p className="font-medium">Déposez vos rapports Amazon ici (jusqu’à {MAX_FILES} fichiers)</p>
-        <p className="mt-1 text-sm text-gray-500">
-          Rapport de transactions TVA, plage de dates, règlement, ou vue Transactions (.csv / .txt)
-        </p>
+        <p className="font-medium">{d.dropTitle}</p>
+        <p className="mt-1 text-sm text-gray-500">{d.dropSub}</p>
       </div>
 
       {files.length > 0 && (
@@ -116,7 +115,7 @@ export default function UploadForm() {
                 onClick={() => removeFile(i)}
                 disabled={busy}
                 className="ml-3 text-gray-400 hover:text-red-600"
-                aria-label={`Retirer ${f.name}`}
+                aria-label={`${d.remove} ${f.name}`}
               >
                 ✕
               </button>
@@ -131,10 +130,10 @@ export default function UploadForm() {
         className="mt-4 w-full rounded-xl bg-blue-600 px-4 py-3 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300 dark:disabled:bg-gray-700"
       >
         {busy
-          ? "Analyse des rapports…"
+          ? d.analyzing
           : files.length > 1
-            ? `Générer les rapports (${files.length} fichiers)`
-            : "Générer le rapport"}
+            ? d.generateMany.replaceAll("{n}", String(files.length))
+            : d.generateOne}
       </button>
 
       {error && (
@@ -156,7 +155,7 @@ export default function UploadForm() {
             >
               {r.error
                 ? `✗ ${r.fileName} — ${r.error}`
-                : `✓ ${r.fileName} — ${r.rowCount} lignes importées`}
+                : `✓ ${r.fileName} — ${r.rowCount} ${d.imported}`}
             </li>
           ))}
         </ul>

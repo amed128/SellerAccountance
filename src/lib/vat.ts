@@ -31,8 +31,10 @@ export interface VatSummary {
   vatToPay: number; // total à décaisser (FR + OSS)
   byCountry: VatByCountry[];
   estimated: boolean; // true when VAT was estimated (report had no VAT columns)
-  notes: string[];
+  notes: VatNoteKey[]; // translation keys, resolved in the UI
 }
+
+export type VatNoteKey = "estimated" | "b2bReverseCharge" | "exportExempt" | "amazonFeesReverseCharge";
 
 function classifyRegime(t: NormalizedTransaction): VatByCountry["regime"] {
   const arrival = t.arrivalCountry ?? "FR";
@@ -50,7 +52,7 @@ function classifyRegime(t: NormalizedTransaction): VatByCountry["regime"] {
  *   standard rate (20%) on VAT-inclusive amounts, flagged `estimated`.
  */
 export function computeVatSummary(transactions: NormalizedTransaction[]): VatSummary {
-  const notes: string[] = [];
+  const notes: VatNoteKey[] = [];
   let estimated = false;
 
   let grossRevenue = 0;
@@ -109,21 +111,10 @@ export function computeVatSummary(transactions: NormalizedTransaction[]): VatSum
     .reduce((s, e) => s + e.vatAmount, 0);
   const vatOss = entries.filter((e) => e.regime === "OSS").reduce((s, e) => s + e.vatAmount, 0);
 
-  if (estimated) {
-    notes.push(
-      "TVA estimée au taux normal français de 20 % (le rapport ne contient pas le détail TVA). " +
-        "Importez le Rapport de transactions TVA Amazon pour un calcul exact."
-    );
-  }
-  if (entries.some((e) => e.regime === "REVERSE_CHARGE_B2B")) {
-    notes.push("Ventes B2B intracommunautaires en autoliquidation : TVA non due, à déclarer en DEB/état récapitulatif.");
-  }
-  if (entries.some((e) => e.regime === "EXPORT")) {
-    notes.push("Exportations hors UE exonérées de TVA (art. 262 I du CGI).");
-  }
-  notes.push(
-    "Les frais Amazon (facturés depuis le Luxembourg) sont en autoliquidation : TVA à la fois collectée et déductible, impact net nul si vous êtes assujetti."
-  );
+  if (estimated) notes.push("estimated");
+  if (entries.some((e) => e.regime === "REVERSE_CHARGE_B2B")) notes.push("b2bReverseCharge");
+  if (entries.some((e) => e.regime === "EXPORT")) notes.push("exportExempt");
+  notes.push("amazonFeesReverseCharge");
 
   return {
     currency: transactions[0]?.currency ?? "EUR",
