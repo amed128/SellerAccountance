@@ -1,0 +1,9 @@
+settlement-id	settlement-start-date	settlement-end-date	deposit-date	total-amount	currency	transaction-type	order-id	merchant-order-id	adjustment-id	shipment-id	marketplace-name	amount-type	amount-description	amount	fulfillment-id	posted-date	order-item-code	merchant-order-item-id	sku	quantity-purchased
+9876543210	2026-06-01	2026-06-15	2026-06-17	54.36	EUR															
+9876543210					EUR	Order	405-1111111-0000001	405-1111111-0000001		SHIP1	amazon.fr	ItemPrice	Principal	30.00	AFN	2026-06-02	OI1		SKU-RED-01	1
+9876543210					EUR	Order	405-1111111-0000001	405-1111111-0000001		SHIP1	amazon.fr	ItemFees	Commission	-4.50	AFN	2026-06-02	OI1		SKU-RED-01	0
+9876543210					EUR	Order	405-1111111-0000001	405-1111111-0000001		SHIP1	amazon.fr	ItemFees	FBAPerUnitFulfillmentFee	-3.20	AFN	2026-06-02	OI1		SKU-RED-01	0
+9876543210					EUR	Order	405-2222222-0000002	405-2222222-0000002		SHIP2	amazon.fr	ItemPrice	Principal	60.00	AFN	2026-06-05	OI2		SKU-BLU-02	2
+9876543210					EUR	Order	405-2222222-0000002	405-2222222-0000002		SHIP2	amazon.fr	ItemFees	Commission	-9.00	AFN	2026-06-05	OI2		SKU-BLU-02	0
+9876543210					EUR	Refund	405-1111111-0000001	405-1111111-0000001	ADJ1	SHIP1	amazon.fr	ItemPrice	Principal	-30.00	AFN	2026-06-10	OI1		SKU-RED-01	1
+9876543210					EUR	other-transaction					amazon.fr	other-transaction	Subscription Fee	-39.00		2026-06-15				0

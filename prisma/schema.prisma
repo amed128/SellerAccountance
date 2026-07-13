@@ -1,0 +1,68 @@
+// SellerAccountance — Prisma schema
+// Dev: SQLite. Production: switch provider to "postgresql" and set DATABASE_URL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Placeholder for the SaaS step (auth comes later). All data is scoped to a user.
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  reports   Report[]
+}
+
+// One uploaded file = one Report
+model Report {
+  id           String        @id @default(cuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
+  fileName     String
+  reportType   String // VAT_TRANSACTIONS | SETTLEMENT | DATE_RANGE
+  periodStart  DateTime?
+  periodEnd    DateTime?
+  currency     String        @default("EUR")
+  rowCount     Int           @default(0)
+  uploadedAt   DateTime      @default(now())
+  transactions Transaction[]
+
+  @@index([userId])
+}
+
+// Normalized transaction — every report type maps into this shape
+model Transaction {
+  id       String @id @default(cuid())
+  reportId String
+  report   Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  date            DateTime?
+  type            String // SALE | REFUND | FEE | FBA_FEE | OTHER | LIQUIDATION | SHIPMENT ...
+  orderId         String?
+  sku             String?
+  description     String?
+  quantity        Int       @default(0)
+  marketplace     String?
+  arrivalCountry  String? // ship-to country (VAT report)
+  departCountry   String? // ship-from country (VAT report)
+  buyerVatNumber  String? // present => B2B
+  amountExclVat   Float     @default(0)
+  vatRate         Float? // e.g. 0.20
+  vatAmount       Float     @default(0)
+  amountInclVat   Float     @default(0)
+  fees            Float     @default(0) // selling fees (negative)
+  fbaFees         Float     @default(0) // fulfillment fees (negative)
+  otherFees       Float     @default(0)
+  total           Float     @default(0) // net movement for this row
+  currency        String    @default("EUR")
+
+  @@index([reportId])
+  @@index([type])
+  @@index([arrivalCountry])
+}
