@@ -1,12 +1,12 @@
 // SellerAccountance — Prisma schema
-// Dev: SQLite. Production: switch provider to "postgresql" and set DATABASE_URL.
+// PostgreSQL everywhere (Neon free tier works for both dev and prod).
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

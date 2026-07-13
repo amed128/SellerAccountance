@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SellerAccountance
 
-## Getting Started
+Comptabilité pour vendeurs Amazon : importez vos rapports Seller Central, obtenez votre chiffre d'affaires, vos frais Amazon et votre TVA à payer ou à récupérer (France + OSS).
 
-First, run the development server:
+## Fonctionnalités
+
+- **Import de 4 formats de rapports Amazon** avec détection automatique :
+  - Rapport de transactions TVA Amazon (calcul TVA exact par pays)
+  - Rapport de plage de dates (FR/EN)
+  - Rapport de règlement (settlement, fichier plat V2)
+  - Export de la vue Transactions (Paiements)
+- **Tableau de bord** : CA TTC/HT, frais Amazon, virements bancaires, mouvement net
+- **Moteur TVA France** : TVA française, OSS (B2C UE), autoliquidation B2B, exports exonérés — avec détail par pays
+- Guide intégré : où exporter chaque rapport dans Seller Central
+
+## Stack
+
+Next.js (App Router, TypeScript, Tailwind) · Prisma · PostgreSQL
+
+## Développement local
 
 ```bash
+npm install
+cp .env.example .env   # renseignez DATABASE_URL (Postgres, ex. Neon gratuit)
+npx prisma migrate deploy
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Des rapports d'exemple sont fournis dans `samples/`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Déploiement sur Vercel
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Importez ce repo sur [vercel.com/new](https://vercel.com/new).
+2. Dans le projet Vercel : **Storage → Create Database → Neon (Postgres)** — cela ajoute `DATABASE_URL` automatiquement.
+3. Déployez. Le build exécute `prisma migrate deploy` puis `next build`.
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Pour utiliser la même base en local : `npx vercel env pull .env`.
