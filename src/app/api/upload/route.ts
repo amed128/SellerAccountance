@@ -12,43 +12,72 @@ async function getDefaultUser() {
   });
 }
 
+const MAX_FILES = 10;
+
+interface FileResult {
+  fileName: string;
+  reportId?: string;
+  rowCount?: number;
+  reportType?: string;
+  error?: string;
+}
+
 export async function POST(req: NextRequest) {
-  try {
-    const formData = await req.formData();
-    const file = formData.get("file");
-    if (!(file instanceof File)) {
-      return NextResponse.json({ error: "Aucun fichier reçu." }, { status: 400 });
-    }
-    const content = await file.text();
-    const parsed = parseReportFile(file.name, content);
-    const user = await getDefaultUser();
+  const formData = await req.formData();
+  const files = [...formData.getAll("files"), formData.get("file")].filter(
+    (f): f is File => f instanceof File
+  );
+  if (files.length === 0) {
+    return NextResponse.json({ error: "Aucun fichier reçu." }, { status: 400 });
+  }
+  if (files.length > MAX_FILES) {
+    return NextResponse.json({ error: `Maximum ${MAX_FILES} fichiers par génération.` }, { status: 400 });
+  }
 
-    const report = await prisma.report.create({
-      data: {
-        userId: user.id,
+  const user = await getDefaultUser();
+  const results: FileResult[] = [];
+
+  for (const file of files) {
+    try {
+      const content = await file.text();
+      const parsed = parseReportFile(file.name, content);
+      const report = await prisma.report.create({
+        data: {
+          userId: user.id,
+          fileName: file.name,
+          reportType: parsed.reportType,
+          currency: parsed.currency,
+          periodStart: parsed.periodStart,
+          periodEnd: parsed.periodEnd,
+          rowCount: parsed.transactions.length,
+        },
+      });
+      const chunkSize = 500;
+      for (let i = 0; i < parsed.transactions.length; i += chunkSize) {
+        await prisma.transaction.createMany({
+          data: parsed.transactions.slice(i, i + chunkSize).map((t) => ({
+            reportId: report.id,
+            ...t,
+          })),
+        });
+      }
+      results.push({
         fileName: file.name,
-        reportType: parsed.reportType,
-        currency: parsed.currency,
-        periodStart: parsed.periodStart,
-        periodEnd: parsed.periodEnd,
+        reportId: report.id,
         rowCount: parsed.transactions.length,
-      },
-    });
-
-    // SQLite: chunk inserts to stay under parameter limits
-    const chunkSize = 200;
-    for (let i = 0; i < parsed.transactions.length; i += chunkSize) {
-      await prisma.transaction.createMany({
-        data: parsed.transactions.slice(i, i + chunkSize).map((t) => ({
-          reportId: report.id,
-          ...t,
-        })),
+        reportType: parsed.reportType,
+      });
+    } catch (err) {
+      results.push({
+        fileName: file.name,
+        error: err instanceof Error ? err.message : "Erreur lors du traitement du fichier.",
       });
     }
-
-    return NextResponse.json({ reportId: report.id, rowCount: parsed.transactions.length, reportType: parsed.reportType });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Erreur lors du traitement du fichier.";
-    return NextResponse.json({ error: message }, { status: 422 });
   }
+
+  const created = results.filter((r) => r.reportId);
+  return NextResponse.json(
+    { results, createdCount: created.length },
+    { status: created.length > 0 ? 200 : 422 }
+  );
 }

@@ -1,9 +1,9 @@
 const GUIDES = [
   {
-    name: "Rapport de plage de dates",
+    name: "Rapport de transactions (plage de dates)",
     badge: "Recommandé — CA & frais",
-    path: "Seller Central → Rapports → Paiements → Rapports de plage de dates",
-    steps: "Cliquez sur « Générer un rapport », choisissez « Transaction », sélectionnez le mois, puis téléchargez le CSV.",
+    path: "Seller Central → Menu → Paiements → Référentiel des rapports",
+    steps: "Type de rapport « Transaction », choisissez « Plage de dates personnalisée » ou « Mois », cliquez sur « Générer », puis téléchargez le CSV.",
   },
   {
     name: "Rapport de transactions TVA Amazon",
@@ -14,14 +14,14 @@ const GUIDES = [
   {
     name: "Rapport de règlement (settlement)",
     badge: "Rapprochement bancaire",
-    path: "Seller Central → Rapports → Paiements → Tous les relevés",
+    path: "Seller Central → Menu → Paiements → onglet « Tous les relevés »",
     steps: "Sur la période voulue, cliquez sur « Télécharger le fichier plat (V2) » (.txt).",
   },
   {
     name: "Vue Transactions (Paiements)",
     badge: "Résumé simplifié",
-    path: "Seller Central → Paiements → Transactions",
-    steps: "Filtrez la période puis « Télécharger » (CSV). Vue simplifiée : les frais FBA y sont fusionnés avec les commissions — préférez le rapport de plage de dates pour le détail.",
+    path: "Seller Central → Menu → Paiements → onglet « Aperçu des transactions »",
+    steps: "Filtrez la période puis « Télécharger » (CSV). Vue simplifiée : les frais FBA y sont fusionnés avec les commissions — préférez le rapport de transactions pour le détail.",
   },
 ];
 
