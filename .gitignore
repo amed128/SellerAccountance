@@ -42,3 +42,8 @@ next-env.d.ts
 
 # local database
 prisma/dev.db*
+
+# tests
+tests/e2e/.pgdata/
+playwright-report/
+test-results/

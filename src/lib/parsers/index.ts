@@ -179,10 +179,10 @@ function parseSettlementRows(rows: Record<string, string>[]): NormalizedTransact
     t.total += amount;
     if (amountType.includes("itemprice") || amountType.includes("item-price") || amountType === "itemprice") {
       t.amountInclVat += amount; // settlement amounts are VAT-inclusive
+    } else if (desc.includes("fba") || desc.includes("fulfil")) {
+      t.fbaFees += amount; // must beat the ItemFees check: FBA fees are also amount-type ItemFees
     } else if (desc.includes("commission") || amountType.includes("itemfees") || amountType.includes("item-fees")) {
       t.fees += amount;
-    } else if (desc.includes("fba") || desc.includes("fulfil")) {
-      t.fbaFees += amount;
     } else {
       t.otherFees += amount;
     }

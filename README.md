@@ -28,6 +28,15 @@ npm run dev
 
 Des rapports d'exemple sont fournis dans `samples/`.
 
+## Tests
+
+```bash
+npm test         # tests unitaires (parseurs + moteur TVA)
+npm run test:ui  # tests UI Playwright (démarre un PostgreSQL embarqué + l'app)
+```
+
+Les tests UI utilisent le Chrome installé sur la machine (`channel: "chrome"`) et une base PostgreSQL embarquée jetable — aucune configuration requise.
+
 ## Déploiement sur Vercel
 
 1. Importez ce repo sur [vercel.com/new](https://vercel.com/new).
