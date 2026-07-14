@@ -9,7 +9,20 @@ export async function getLocale(): Promise<Locale> {
 }
 
 const fr = {
-  nav: { home: "Accueil", help: "Aide", settings: "Paramètres" },
+  nav: { home: "Accueil", overview: "Vue d’ensemble", help: "Aide", settings: "Paramètres" },
+  overview: {
+    title: "Vue d’ensemble",
+    subtitle: "Toutes périodes confondues, rapports combinés et dédupliqués.",
+    empty: "Aucun rapport importé. Commencez par importer un rapport sur l’accueil.",
+    period: "Période couverte",
+    monthly: "Détail par mois",
+    month: "Mois",
+    undated: "Sans date",
+    duplicatesRemoved: "{n} ligne(s) en double ignorée(s) : présentes dans plusieurs rapports importés (périodes qui se chevauchent ou fichier importé deux fois).",
+    mixedWarning:
+      "Des rapports de types différents couvrent la même période : les mêmes commandes peuvent y figurer avec des montants différents et être comptées deux fois. Préférez un seul type de rapport par période (idéalement le rapport de transactions).",
+    reportsIncluded: "{n} rapport(s) combiné(s)",
+  },
   home: {
     tagline: "Comptabilité Amazon : chiffre d’affaires, frais et TVA à payer ou à récupérer.",
     reports: "Rapports importés",
@@ -130,7 +143,20 @@ const fr = {
 };
 
 const en: typeof fr = {
-  nav: { home: "Home", help: "Help", settings: "Settings" },
+  nav: { home: "Home", overview: "Overview", help: "Help", settings: "Settings" },
+  overview: {
+    title: "Overview",
+    subtitle: "All periods combined, reports merged and deduplicated.",
+    empty: "No reports imported yet. Start by uploading one on the home page.",
+    period: "Period covered",
+    monthly: "Monthly breakdown",
+    month: "Month",
+    undated: "Undated",
+    duplicatesRemoved: "{n} duplicate row(s) ignored: present in several imported reports (overlapping periods or the same file uploaded twice).",
+    mixedWarning:
+      "Reports of different types cover the same period: the same orders can appear in both with different amounts and be counted twice. Prefer a single report type per period (ideally the transactions report).",
+    reportsIncluded: "{n} report(s) combined",
+  },
   home: {
     tagline: "Amazon accounting: revenue, fees, and VAT to pay or reclaim.",
     reports: "Imported reports",

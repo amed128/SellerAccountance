@@ -13,6 +13,9 @@ export default async function Nav() {
           <Link href="/" className="text-gray-600 dark:text-gray-300 hover:text-blue-600">
             {d.nav.home}
           </Link>
+          <Link href="/overview" className="text-gray-600 dark:text-gray-300 hover:text-blue-600">
+            {d.nav.overview}
+          </Link>
           <Link href="/help" className="text-gray-600 dark:text-gray-300 hover:text-blue-600">
             {d.nav.help}
           </Link>

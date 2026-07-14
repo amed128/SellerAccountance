@@ -1,0 +1,6 @@
+"Toutes les valeurs sont en EUR, sauf indication contraire. Compte : Ma Boutique | Période : 01/07/2026 - 31/07/2026"
+"date/heure","numéro de règlement","type","numéro de la commande","sku","description","quantité","marketplace","traitement","ventes de produits","crédits d'expédition","rabais promotionnels","taxes sur la vente des produits","frais de vente","frais Expédié par Amazon","autres frais de transaction","autre","total"
+"3 juil. 2026 09:12:00 UTC+2","1234568","Commande","405-2222222-0000010","SKU-RED-01","Coque rouge","2","amazon.fr","Amazon","60,00","0,00","0,00","0,00","-9,00","-6,40","-0,40","0,00","44,20"
+"10 juil. 2026 16:40:00 UTC+2","1234568","Commande","405-2222222-0000011","SKU-GRN-03","Coque verte","1","amazon.fr","Amazon","30,00","4,90","0,00","0,00","-5,24","-3,20","-0,20","0,00","26,26"
+"21 juil. 2026 11:05:00 UTC+2","1234568","Remboursement","405-2222222-0000010","SKU-RED-01","Coque rouge","1","amazon.fr","Amazon","-30,00","0,00","0,00","0,00","4,50","0,00","0,00","0,00","-25,50"
+"31 juil. 2026 12:00:00 UTC+2","1234568","Transfert","","","Virement vers compte bancaire","","","","0,00","0,00","0,00","0,00","0,00","0,00","0,00","-30,00","-30,00"
