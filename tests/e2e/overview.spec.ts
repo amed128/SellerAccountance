@@ -5,6 +5,8 @@ import path from "node:path";
 const sample = (name: string) => path.join(__dirname, "../../samples", name);
 
 // Start from a clean database: other spec files upload reports too.
+// Only reports/transactions are cleared — the shared e2e user (and its
+// logged-in session used by every spec) must survive between test files.
 test.beforeAll(async () => {
   const prisma = new PrismaClient({
     datasources: {
@@ -12,7 +14,6 @@ test.beforeAll(async () => {
     },
   });
   await prisma.report.deleteMany();
-  await prisma.user.deleteMany();
   await prisma.$disconnect();
 });
 

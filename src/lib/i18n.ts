@@ -9,7 +9,32 @@ export async function getLocale(): Promise<Locale> {
 }
 
 const fr = {
-  nav: { home: "Accueil", overview: "Vue d’ensemble", help: "Aide", settings: "Paramètres" },
+  nav: {
+    home: "Accueil",
+    overview: "Vue d’ensemble",
+    help: "Aide",
+    settings: "Paramètres",
+    logout: "Déconnexion",
+    login: "Connexion",
+  },
+  auth: {
+    loginTitle: "Connexion",
+    signupTitle: "Créer un compte",
+    email: "E-mail",
+    password: "Mot de passe",
+    name: "Nom",
+    nameOptional: "Nom (facultatif)",
+    loginSubmit: "Se connecter",
+    signupSubmit: "Créer le compte",
+    noAccount: "Pas encore de compte ?",
+    hasAccount: "Déjà un compte ?",
+    signupLink: "Créer un compte",
+    loginLink: "Se connecter",
+    invalidCredentials: "E-mail ou mot de passe incorrect.",
+    emailTaken: "Un compte existe déjà avec cet e-mail.",
+    passwordTooShort: "Le mot de passe doit contenir au moins 8 caractères.",
+    invalidEmail: "Adresse e-mail invalide.",
+  },
   overview: {
     title: "Vue d’ensemble",
     subtitle: "Toutes périodes confondues, rapports combinés et dédupliqués.",
@@ -143,7 +168,32 @@ const fr = {
 };
 
 const en: typeof fr = {
-  nav: { home: "Home", overview: "Overview", help: "Help", settings: "Settings" },
+  nav: {
+    home: "Home",
+    overview: "Overview",
+    help: "Help",
+    settings: "Settings",
+    logout: "Log out",
+    login: "Log in",
+  },
+  auth: {
+    loginTitle: "Log in",
+    signupTitle: "Create an account",
+    email: "Email",
+    password: "Password",
+    name: "Name",
+    nameOptional: "Name (optional)",
+    loginSubmit: "Log in",
+    signupSubmit: "Create account",
+    noAccount: "Don’t have an account?",
+    hasAccount: "Already have an account?",
+    signupLink: "Create an account",
+    loginLink: "Log in",
+    invalidCredentials: "Incorrect email or password.",
+    emailTaken: "An account already exists with this email.",
+    passwordTooShort: "Password must be at least 8 characters long.",
+    invalidEmail: "Invalid email address.",
+  },
   overview: {
     title: "Overview",
     subtitle: "All periods combined, reports merged and deduplicated.",

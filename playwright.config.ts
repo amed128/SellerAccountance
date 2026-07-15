@@ -6,11 +6,13 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   timeout: 60_000,
+  globalSetup: "./tests/e2e/global-setup.ts",
   use: {
     baseURL: "http://localhost:3100",
     // Bundled Playwright browsers need macOS 13+; use the system Chrome instead
     channel: "chrome",
     locale: "fr-FR",
+    storageState: "tests/e2e/.auth/user.json",
   },
   webServer: {
     // Boots embedded PostgreSQL + migrations + Next.js (see the script)

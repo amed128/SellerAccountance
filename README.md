@@ -12,6 +12,7 @@ Comptabilité pour vendeurs Amazon : importez vos rapports Seller Central, obten
 - **Tableau de bord** : CA TTC/HT, frais Amazon, virements bancaires, mouvement net
 - **Moteur TVA France** : TVA française, OSS (B2C UE), autoliquidation B2B, exports exonérés — avec détail par pays
 - Guide intégré : où exporter chaque rapport dans Seller Central
+- **Comptes utilisateurs** : chaque rapport est scopé à son propriétaire (e-mail + mot de passe, session en base)
 
 ## Stack
 
@@ -25,6 +26,8 @@ cp .env.example .env   # renseignez DATABASE_URL (Postgres, ex. Neon gratuit)
 npx prisma migrate deploy
 npm run dev
 ```
+
+Toute l'app est derrière un compte : ouvrez `/signup` pour en créer un avant d'importer des rapports.
 
 Des rapports d'exemple sont fournis dans `samples/`.
 
@@ -47,5 +50,5 @@ Pour utiliser la même base en local : `npx vercel env pull .env`.
 
 ## Prochaines étapes (backlog)
 
-- **Authentification / multi-tenant** : le modèle `User` est un placeholder non utilisé — pas de login, toutes les données sont visibles par tout le monde. À faire avant toute fonctionnalité qui suppose des données "par utilisateur".
-- **Suggestions / alertes automatiques** : une fois l'auth en place, ajouter des vérifications (basées sur des règles, pas un agent LLM — fiabilité et auditabilité priment sur du conseil fiscal) sur les données importées : n° TVA incohérent, seuil OSS proche, mois manquant, ratio de frais anormal, etc.
+- **Suggestions / alertes automatiques** : ajouter des vérifications (basées sur des règles, pas un agent LLM — fiabilité et auditabilité priment sur du conseil fiscal) sur les données importées : n° TVA incohérent, seuil OSS proche, mois manquant, ratio de frais anormal, etc.
+- **Auth — durcissement** : l'authentification actuelle (e-mail + mot de passe, session en base) n'a pas de vérification d'e-mail ni de réinitialisation de mot de passe ; à ajouter avant un vrai lancement public.

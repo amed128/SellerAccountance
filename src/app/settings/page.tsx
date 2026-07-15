@@ -1,5 +1,6 @@
 import { getDict } from "@/lib/i18n";
 import { getTheme } from "@/lib/theme";
+import { requireUser } from "@/lib/auth";
 import { saveSettings } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -9,7 +10,7 @@ export default async function SettingsPage({
 }: {
   searchParams: Promise<{ saved?: string }>;
 }) {
-  const [{ locale, d }, theme, { saved }] = await Promise.all([getDict(), getTheme(), searchParams]);
+  const [{ locale, d }, theme, { saved }] = await Promise.all([getDict(), getTheme(), searchParams, requireUser()]);
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">

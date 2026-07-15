@@ -45,6 +45,7 @@ prisma/dev.db*
 
 # tests
 tests/e2e/.pgdata/
+tests/e2e/.auth/
 playwright-report/
 test-results/
 

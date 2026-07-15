@@ -10,13 +10,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Placeholder for the SaaS step (auth comes later). All data is scoped to a user.
 model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime  @default(now())
+  reports      Report[]
+  sessions     Session[]
+}
+
+// Opaque-token database session (cookie holds only the token).
+model Session {
   id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
   createdAt DateTime @default(now())
-  reports   Report[]
+
+  @@index([userId])
 }
 
 // One uploaded file = one Report

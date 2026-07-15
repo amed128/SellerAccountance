@@ -1,16 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { parseReportFile } from "@/lib/parsers";
-
-// Single-user MVP: everything belongs to a default local user.
-// Replaced by real auth in the SaaS step.
-async function getDefaultUser() {
-  return prisma.user.upsert({
-    where: { email: "local@selleraccountance.dev" },
-    update: {},
-    create: { email: "local@selleraccountance.dev", name: "Local User" },
-  });
-}
+import { getSession } from "@/lib/auth";
 
 const MAX_FILES = 10;
 
@@ -23,6 +14,11 @@ interface FileResult {
 }
 
 export async function POST(req: NextRequest) {
+  const user = await getSession();
+  if (!user) {
+    return NextResponse.json({ error: "Non authentifié." }, { status: 401 });
+  }
+
   const formData = await req.formData();
   const files = [...formData.getAll("files"), formData.get("file")].filter(
     (f): f is File => f instanceof File
@@ -34,7 +30,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Maximum ${MAX_FILES} fichiers par génération.` }, { status: 400 });
   }
 
-  const user = await getDefaultUser();
   const results: FileResult[] = [];
 
   for (const file of files) {

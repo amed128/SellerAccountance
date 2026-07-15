@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getDict } from "@/lib/i18n";
+import { requireUser } from "@/lib/auth";
 import { computeVatSummary } from "@/lib/vat";
 import type { NormalizedTransaction } from "@/lib/parsers/types";
 
@@ -23,11 +24,12 @@ function Card({ label, value, accent, sub }: { label: string; value: string; acc
 
 export default async function ReportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [report, { locale, d }] = await Promise.all([
+  const [user, report, { locale, d }] = await Promise.all([
+    requireUser(),
     prisma.report.findUnique({ where: { id }, include: { transactions: true } }),
     getDict(),
   ]);
-  if (!report) notFound();
+  if (!report || report.userId !== user.id) notFound();
   const t = d.dashboard;
 
   const txs = report.transactions as unknown as NormalizedTransaction[];
