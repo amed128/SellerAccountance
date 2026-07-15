@@ -44,3 +44,8 @@ Les tests UI utilisent le Chrome installé sur la machine (`channel: "chrome"`) 
 3. Déployez. Le build exécute `prisma migrate deploy` puis `next build`.
 
 Pour utiliser la même base en local : `npx vercel env pull .env`.
+
+## Prochaines étapes (backlog)
+
+- **Authentification / multi-tenant** : le modèle `User` est un placeholder non utilisé — pas de login, toutes les données sont visibles par tout le monde. À faire avant toute fonctionnalité qui suppose des données "par utilisateur".
+- **Suggestions / alertes automatiques** : une fois l'auth en place, ajouter des vérifications (basées sur des règles, pas un agent LLM — fiabilité et auditabilité priment sur du conseil fiscal) sur les données importées : n° TVA incohérent, seuil OSS proche, mois manquant, ratio de frais anormal, etc.
