@@ -4,12 +4,14 @@ import { getDict } from "@/lib/i18n";
 export default async function Nav() {
   const { d } = await getDict();
   return (
-    <header className="border-b border-gray-200 dark:border-gray-800">
-      <nav className="mx-auto flex max-w-4xl items-center justify-between px-6 py-3">
+    <header>
+      <div className="mx-auto max-w-4xl px-6 py-3">
         <Link href="/" className="font-bold">
           SellerAccountance
         </Link>
-        <div className="flex items-center gap-5 text-sm">
+      </div>
+      <nav className="border-t border-b border-gray-200 dark:border-gray-800">
+        <div className="mx-auto flex max-w-4xl flex-wrap items-center gap-x-5 gap-y-2 px-6 py-2.5 text-sm">
           <Link href="/" className="text-gray-600 dark:text-gray-300 hover:text-blue-600">
             {d.nav.home}
           </Link>
