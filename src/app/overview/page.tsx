@@ -9,12 +9,11 @@ import {
   TaggedTransaction,
 } from "@/lib/aggregate";
 import { computeVatSummary } from "@/lib/vat";
+import { computeAlerts } from "@/lib/alerts";
+import { formatMoney, formatMonth } from "@/lib/format";
+import AlertList from "@/components/AlertList";
 
 export const dynamic = "force-dynamic";
-
-function eur(n: number, locale: string, currency = "EUR") {
-  return n.toLocaleString(locale === "en" ? "en-GB" : "fr-FR", { style: "currency", currency });
-}
 
 function Card({ label, value, accent, sub }: { label: string; value: string; accent?: string; sub?: string }) {
   return (
@@ -27,12 +26,7 @@ function Card({ label, value, accent, sub }: { label: string; value: string; acc
 }
 
 function monthLabel(month: string, locale: string, undated: string) {
-  if (!month) return undated;
-  const [y, m] = month.split("-").map(Number);
-  return new Date(y, m - 1, 1).toLocaleDateString(locale === "en" ? "en-GB" : "fr-FR", {
-    month: "long",
-    year: "numeric",
-  });
+  return month ? formatMonth(month, locale) : undated;
 }
 
 export default async function OverviewPage() {
@@ -67,8 +61,9 @@ export default async function OverviewPage() {
   const summary = computeVatSummary(transactions);
   const months = monthlySummaries(transactions);
   const mixedOverlap = hasMixedTypeOverlap(reports);
+  const alerts = computeAlerts(transactions, months);
   const cur = summary.currency;
-  const money = (n: number) => eur(n, locale, cur);
+  const money = (n: number) => formatMoney(n, locale, cur);
 
   const dates = transactions
     .map((x) => (x.date ? new Date(x.date).getTime() : null))
@@ -104,6 +99,7 @@ export default async function OverviewPage() {
           {d.overview.duplicatesRemoved.replace("{n}", String(duplicatesRemoved))}
         </p>
       )}
+      <AlertList alerts={alerts} locale={locale} currency={cur} d={d.alerts} />
 
       <h2 className="mt-8 text-lg font-semibold">{t.revenue}</h2>
       <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
