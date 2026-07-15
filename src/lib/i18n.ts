@@ -118,6 +118,18 @@ const fr = {
         "Les frais Amazon (facturés depuis le Luxembourg) sont en autoliquidation : TVA à la fois collectée et déductible, impact net nul si vous êtes assujetti.",
     } as Record<string, string>,
   },
+  alerts: {
+    malformedVatNumber: "{n} numéro(s) de TVA acheteur d'un format inhabituel : {examples} — vérifiez qu'ils sont corrects.",
+    ossThresholdExceeded:
+      "Seuil OSS dépassé pour {year} : {amount} de ventes B2C UE hors France cette année. La déclaration OSS (ou l'immatriculation TVA dans chaque pays de destination) devient obligatoire.",
+    ossThresholdApproaching:
+      "Vous approchez du seuil OSS de 10 000 € pour {year} : {amount} déjà réalisés ({remaining} restants).",
+    missingMonth: "Aucune donnée pour {month} — avez-vous oublié d'importer un rapport pour cette période ?",
+    unusualFeeRatioHigh:
+      "Les frais Amazon représentent {ratio} de votre CA TTC sur les rapports importés — plus élevé qu'attendu, vérifiez qu'il ne s'agit pas d'une erreur d'import.",
+    unusualFeeRatioLow:
+      "Les frais Amazon ne représentent que {ratio} de votre CA TTC — vérifiez que le rapport importé contient bien le détail des frais.",
+  },
   settings: {
     title: "Paramètres",
     language: "Langue",
@@ -276,6 +288,18 @@ const en: typeof fr = {
       amazonFeesReverseCharge:
         "Amazon fees (invoiced from Luxembourg) fall under reverse charge: VAT is both collected and deductible, net-zero impact if you are VAT-registered.",
     },
+  },
+  alerts: {
+    malformedVatNumber: "{n} buyer VAT number(s) with an unusual format: {examples} — please double-check them.",
+    ossThresholdExceeded:
+      "OSS threshold exceeded for {year}: {amount} in non-France EU B2C sales this year. OSS registration (or VAT registration in each destination country) is now required.",
+    ossThresholdApproaching:
+      "Approaching the €10,000 OSS threshold for {year}: {amount} so far ({remaining} left).",
+    missingMonth: "No data for {month} — did you forget to upload a report for that period?",
+    unusualFeeRatioHigh:
+      "Amazon fees are {ratio} of your gross revenue across the imported reports — higher than expected, check this isn't an import error.",
+    unusualFeeRatioLow:
+      "Amazon fees are only {ratio} of your gross revenue — check the imported report actually includes fee detail.",
   },
   settings: {
     title: "Settings",

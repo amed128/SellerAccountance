@@ -4,13 +4,10 @@ import { prisma } from "@/lib/db";
 import { getDict } from "@/lib/i18n";
 import { requireUser } from "@/lib/auth";
 import { computeVatSummary } from "@/lib/vat";
+import { formatMoney } from "@/lib/format";
 import type { NormalizedTransaction } from "@/lib/parsers/types";
 
 export const dynamic = "force-dynamic";
-
-function eur(n: number, locale: string, currency = "EUR") {
-  return n.toLocaleString(locale === "en" ? "en-GB" : "fr-FR", { style: "currency", currency });
-}
 
 function Card({ label, value, accent, sub }: { label: string; value: string; accent?: string; sub?: string }) {
   return (
@@ -35,7 +32,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const txs = report.transactions as unknown as NormalizedTransaction[];
   const summary = computeVatSummary(txs);
   const cur = report.currency;
-  const money = (n: number) => eur(n, locale, cur);
+  const money = (n: number) => formatMoney(n, locale, cur);
 
   const sales = txs.filter((x) => x.type === "SALE").length;
   const refunds = txs.filter((x) => x.type === "REFUND").length;
