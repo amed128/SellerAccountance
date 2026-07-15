@@ -42,16 +42,16 @@ export default async function Home() {
               <li key={r.id}>
                 <Link
                   href={`/reports/${r.id}`}
-                  className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900"
+                  className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900"
                 >
-                  <div>
-                    <p className="font-medium">{r.fileName}</p>
+                  <div className="min-w-0">
+                    <p className="font-medium truncate">{r.fileName}</p>
                     <p className="text-sm text-gray-500">
                       {d.reportTypes[r.reportType] ?? r.reportType} · {fmtPeriod(r.periodStart, r.periodEnd, locale)} ·{" "}
                       {r.rowCount} {d.home.rows}
                     </p>
                   </div>
-                  <span className="text-sm text-blue-600">{d.home.view}</span>
+                  <span className="shrink-0 whitespace-nowrap text-sm text-blue-600">{d.home.view}</span>
                 </Link>
               </li>
             ))}
