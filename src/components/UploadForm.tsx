@@ -109,12 +109,12 @@ export default function UploadForm({ d }: { d: Dict["upload"] }) {
       {files.length > 0 && (
         <ul className="mt-3 divide-y divide-gray-100 dark:divide-gray-800 rounded-xl border border-gray-200 dark:border-gray-800">
           {files.map((f, i) => (
-            <li key={`${f.name}-${f.size}`} className="flex items-center justify-between px-4 py-2 text-sm">
-              <span className="truncate">{f.name} <span className="text-gray-400">· {fmtSize(f.size)}</span></span>
+            <li key={`${f.name}-${f.size}`} className="flex items-center justify-between gap-3 px-4 py-2 text-sm">
+              <span className="min-w-0 truncate">{f.name} <span className="text-gray-400">· {fmtSize(f.size)}</span></span>
               <button
                 onClick={() => removeFile(i)}
                 disabled={busy}
-                className="ml-3 text-gray-400 hover:text-red-600"
+                className="shrink-0 text-gray-400 hover:text-red-600"
                 aria-label={`${d.remove} ${f.name}`}
               >
                 ✕
