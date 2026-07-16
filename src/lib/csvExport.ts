@@ -16,6 +16,8 @@ function monthLabel(month: string, locale: Locale, undated: string) {
   });
 }
 
+// Shared by the CSV and PDF exports (see pdfExport.tsx) — both routes in
+// lib/exportData.ts return data already shaped to this interface.
 export interface VatExportInput {
   title: string;
   period?: { start: Date; end: Date } | null;

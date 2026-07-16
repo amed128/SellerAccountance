@@ -131,7 +131,8 @@ const fr = {
       "Les frais Amazon ne représentent que {ratio} de votre CA TTC — vérifiez que le rapport importé contient bien le détail des frais.",
   },
   export: {
-    button: "Exporter en CSV",
+    buttonCsv: "Exporter en CSV",
+    buttonPdf: "Exporter en PDF",
     title: "SellerAccountance — Export TVA ({title})",
     generatedOn: "Généré le",
     period: "Période couverte",
@@ -314,7 +315,8 @@ const en: typeof fr = {
       "Amazon fees are only {ratio} of your gross revenue — check the imported report actually includes fee detail.",
   },
   export: {
-    button: "Export as CSV",
+    buttonCsv: "Export as CSV",
+    buttonPdf: "Export as PDF",
     title: "SellerAccountance — VAT export ({title})",
     generatedOn: "Generated on",
     period: "Period covered",

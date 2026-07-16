@@ -14,7 +14,7 @@ Comptabilité pour vendeurs Amazon : importez vos rapports Seller Central, obten
 - Guide intégré : où exporter chaque rapport dans Seller Central
 - **Comptes utilisateurs** : chaque rapport est scopé à son propriétaire (e-mail + mot de passe, session en base)
 - **Alertes automatiques** : vérifications basées sur des règles sur les données importées (n° TVA d'un format inhabituel, seuil OSS proche/dépassé, mois manquant, ratio de frais anormal)
-- **Export CSV** : chiffres prêts pour la déclaration (résumé, détail par mois, détail par pays), depuis la vue d'ensemble ou un rapport
+- **Export CSV et PDF** : chiffres prêts pour la déclaration (résumé, détail par mois, détail par pays), depuis la vue d'ensemble ou un rapport — CSV pour retraitement, PDF pour un document imprimable
 
 ## Stack
 
