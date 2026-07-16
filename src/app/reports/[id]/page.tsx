@@ -40,14 +40,22 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   return (
     <main className="mx-auto max-w-4xl px-6 py-12 w-full">
       <Link href="/" className="text-sm text-blue-600">{t.back}</Link>
-      <div className="mt-2 flex items-start justify-between gap-4">
+      <div className="mt-2 flex flex-wrap items-start justify-between gap-4">
         <h1 className="text-2xl font-bold">{report.fileName}</h1>
-        <a
-          href={`/api/export/reports/${report.id}`}
-          className="shrink-0 rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:border-blue-500 hover:text-blue-600"
-        >
-          {d.export.button}
-        </a>
+        <div className="flex shrink-0 gap-2">
+          <a
+            href={`/api/export/reports/${report.id}`}
+            className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:border-blue-500 hover:text-blue-600"
+          >
+            {d.export.buttonCsv}
+          </a>
+          <a
+            href={`/api/export/reports/${report.id}/pdf`}
+            className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:border-blue-500 hover:text-blue-600"
+          >
+            {d.export.buttonPdf}
+          </a>
+        </div>
       </div>
       <p className="text-gray-500 text-sm">
         {report.rowCount} {t.rows} · {sales} {t.sales} · {refunds} {t.refunds}

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getDict } from "@/lib/i18n";
 import { getSession } from "@/lib/auth";
-import { buildVatExportCsv } from "@/lib/csvExport";
+import { renderVatExportPdf } from "@/lib/pdfExport";
 import { getReportExportData } from "@/lib/exportData";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -12,12 +12,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const [data, { locale, d }] = await Promise.all([getReportExportData(user.id, id), getDict()]);
   if (!data) return NextResponse.json({ error: "Introuvable." }, { status: 404 });
 
-  const csv = buildVatExportCsv(data, locale, d);
+  const pdf = await renderVatExportPdf(data, locale, d);
 
-  return new NextResponse(csv, {
+  return new NextResponse(new Uint8Array(pdf), {
     headers: {
-      "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="selleraccountance-${data.title.replace(/[^a-z0-9.-]+/gi, "_")}-export.csv"`,
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename="selleraccountance-${data.title.replace(/[^a-z0-9.-]+/gi, "_")}-export.pdf"`,
     },
   });
 }
