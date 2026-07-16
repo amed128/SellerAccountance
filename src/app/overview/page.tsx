@@ -77,8 +77,18 @@ export default async function OverviewPage() {
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-12 w-full">
-      <h1 className="text-2xl font-bold">{d.overview.title}</h1>
-      <p className="mt-1 text-gray-500">{d.overview.subtitle}</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">{d.overview.title}</h1>
+          <p className="mt-1 text-gray-500">{d.overview.subtitle}</p>
+        </div>
+        <a
+          href="/api/export/overview"
+          className="shrink-0 rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:border-blue-500 hover:text-blue-600"
+        >
+          {d.export.button}
+        </a>
+      </div>
       <p className="mt-1 text-sm text-gray-500">
         {d.overview.reportsIncluded.replace("{n}", String(reports.length))}
         {dates.length > 0 && (
