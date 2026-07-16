@@ -16,6 +16,8 @@ const fr = {
     settings: "Paramètres",
     logout: "Déconnexion",
     login: "Connexion",
+    openMenu: "Ouvrir le menu",
+    closeMenu: "Fermer le menu",
   },
   auth: {
     loginTitle: "Connexion",
@@ -200,6 +202,8 @@ const en: typeof fr = {
     settings: "Settings",
     logout: "Log out",
     login: "Log in",
+    openMenu: "Open menu",
+    closeMenu: "Close menu",
   },
   auth: {
     loginTitle: "Log in",
