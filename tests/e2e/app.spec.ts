@@ -21,6 +21,39 @@ test.describe("navigation and static pages", () => {
   });
 });
 
+test.describe("mobile navigation menu", () => {
+  test.use({ viewport: { width: 375, height: 700 } });
+
+  test("links are hidden behind a burger button and open on click", async ({ page }) => {
+    await page.goto("/");
+    const menuButton = page.getByRole("button", { name: "Ouvrir le menu" });
+    await expect(menuButton).toBeVisible();
+    await expect(page.getByRole("link", { name: "Vue d’ensemble" })).toBeHidden();
+
+    await menuButton.click();
+    await expect(page.getByRole("link", { name: "Vue d’ensemble" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Fermer le menu" })).toBeVisible();
+  });
+
+  test("closes automatically after following a link", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "Ouvrir le menu" }).click();
+    await page.getByRole("link", { name: "Aide" }).click();
+
+    await expect(page).toHaveURL(/\/help$/);
+    await expect(page.getByRole("link", { name: "Vue d’ensemble" })).toBeHidden();
+    await expect(page.getByRole("button", { name: "Ouvrir le menu" })).toBeVisible();
+  });
+});
+
+test.describe("desktop navigation", () => {
+  test("links are always visible, no burger button", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByRole("button", { name: "Ouvrir le menu" })).toBeHidden();
+    await expect(page.getByRole("link", { name: "Vue d’ensemble" })).toBeVisible();
+  });
+});
+
 test.describe("settings", () => {
   test("language switch to English translates the UI", async ({ page }) => {
     await page.goto("/settings");
