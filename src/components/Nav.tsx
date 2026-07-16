@@ -31,7 +31,7 @@ export default async function Nav() {
               <Link href="/help" className={linkClass}>
                 {d.nav.help}
               </Link>
-              <Link href="/settings" className={ctaClass}>
+              <Link href="/settings" className={linkClass}>
                 {d.nav.settings}
               </Link>
               <form action={logout} className="sm:ml-auto">
