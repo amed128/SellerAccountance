@@ -9,7 +9,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   if (!user) return NextResponse.json({ error: "Non authentifié." }, { status: 401 });
 
   const { id } = await params;
-  const [data, { locale, d }] = await Promise.all([getReportExportData(user.id, id), getDict()]);
+  const [data, { locale, d }] = await Promise.all([
+    getReportExportData(user.id, id, user.homeCountry, user.vatRegime as "STANDARD" | "FRANCHISE"),
+    getDict(),
+  ]);
   if (!data) return NextResponse.json({ error: "Introuvable." }, { status: 404 });
 
   const pdf = await renderVatExportPdf(data, locale, d);

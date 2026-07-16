@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "homeCountry" TEXT NOT NULL DEFAULT 'FR',
+ADD COLUMN     "vatRegime" TEXT NOT NULL DEFAULT 'STANDARD';

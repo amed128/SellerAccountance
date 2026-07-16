@@ -9,7 +9,12 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: "Non authentifié." }, { status: 401 });
 
   const { locale, d } = await getDict();
-  const data = await getOverviewExportData(user.id, d.overview.title);
+  const data = await getOverviewExportData(
+    user.id,
+    d.overview.title,
+    user.homeCountry,
+    user.vatRegime as "STANDARD" | "FRANCHISE"
+  );
   const csv = buildVatExportCsv(data, locale, d);
 
   return new NextResponse(csv, {

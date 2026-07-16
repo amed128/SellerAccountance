@@ -90,8 +90,8 @@ const fr = {
     bankTransfers: "Virements bancaires",
     bankTransfersSub: "Transferts vers votre compte (hors frais)",
     vat: "TVA",
-    vatFr: "TVA collectée (France)",
-    vatFrSub: "CA3, ligne ventes France",
+    vatFr: "TVA collectée (pays d’établissement)",
+    vatFrSub: "Déclaration TVA nationale",
     vatOss: "TVA due via OSS",
     vatOssSub: "Déclaration guichet unique UE",
     vatToPay: "TVA à payer",
@@ -104,7 +104,7 @@ const fr = {
     txCount: "Transactions",
     notes: "À savoir",
     regimes: {
-      DOMESTIC_FR: "TVA française",
+      DOMESTIC: "TVA nationale",
       OSS: "OSS (guichet unique UE)",
       REVERSE_CHARGE_B2B: "B2B autoliquidation",
       EXPORT: "Export hors UE (exonéré)",
@@ -112,18 +112,20 @@ const fr = {
     } as Record<string, string>,
     vatNotes: {
       estimated:
-        "TVA estimée au taux normal français de 20 % (le rapport ne contient pas le détail TVA). Importez le Rapport de transactions TVA Amazon pour un calcul exact.",
+        "TVA estimée au taux normal de votre pays d’établissement ({country}, {rate}) — le rapport ne contient pas le détail TVA. Importez le Rapport de transactions TVA Amazon pour un calcul exact.",
       b2bReverseCharge:
         "Ventes B2B intracommunautaires en autoliquidation : TVA non due, à déclarer en DEB/état récapitulatif.",
-      exportExempt: "Exportations hors UE exonérées de TVA (art. 262 I du CGI).",
+      exportExempt: "Exportations hors UE exonérées de TVA.",
       amazonFeesReverseCharge:
         "Les frais Amazon (facturés depuis le Luxembourg) sont en autoliquidation : TVA à la fois collectée et déductible, impact net nul si vous êtes assujetti.",
+      franchiseExempt:
+        "TVA non applicable : vous êtes en franchise en base de TVA. Aucune TVA à collecter ni à déclarer sur ces ventes — vérifiez que votre chiffre d’affaires reste sous les seuils applicables à votre statut.",
     } as Record<string, string>,
   },
   alerts: {
     malformedVatNumber: "{n} numéro(s) de TVA acheteur d'un format inhabituel : {examples} — vérifiez qu'ils sont corrects.",
     ossThresholdExceeded:
-      "Seuil OSS dépassé pour {year} : {amount} de ventes B2C UE hors France cette année. La déclaration OSS (ou l'immatriculation TVA dans chaque pays de destination) devient obligatoire.",
+      "Seuil OSS dépassé pour {year} : {amount} de ventes B2C UE hors de votre pays d'établissement cette année. La déclaration OSS (ou l'immatriculation TVA dans chaque pays de destination) devient obligatoire.",
     ossThresholdApproaching:
       "Vous approchez du seuil OSS de 10 000 € pour {year} : {amount} déjà réalisés ({remaining} restants).",
     missingMonth: "Aucune donnée pour {month} — avez-vous oublié d'importer un rapport pour cette période ?",
@@ -156,9 +158,26 @@ const fr = {
     themeSystem: "Système",
     themeLight: "Clair",
     themeDark: "Sombre",
+    companyTitle: "Entreprise",
+    homeCountry: "Pays d’établissement",
+    homeCountrySub: "Le pays où votre entreprise est enregistrée — détermine votre TVA nationale et le traitement OSS de vos ventes intra-UE.",
+    vatRegime: "Régime de TVA",
+    vatRegimeSub: "Votre statut vis-à-vis de la TVA.",
+    vatRegimeStandard: "Assujetti à la TVA",
+    vatRegimeStandardSub: "Vous facturez et déclarez la TVA normalement.",
+    vatRegimeFranchise: "Franchise en base de TVA",
+    vatRegimeFranchiseSub: "Micro-entreprise / auto-entrepreneur sous les seuils d’exonération — aucune TVA facturée.",
     save: "Enregistrer",
     saved: "Paramètres enregistrés.",
   },
+  countries: {
+    AT: "Autriche", BE: "Belgique", BG: "Bulgarie", HR: "Croatie", CY: "Chypre",
+    CZ: "Tchéquie", DK: "Danemark", EE: "Estonie", FI: "Finlande", FR: "France",
+    DE: "Allemagne", GR: "Grèce", HU: "Hongrie", IE: "Irlande", IT: "Italie",
+    LV: "Lettonie", LT: "Lituanie", LU: "Luxembourg", MT: "Malte", NL: "Pays-Bas",
+    PL: "Pologne", PT: "Portugal", RO: "Roumanie", SK: "Slovaquie", SI: "Slovénie",
+    ES: "Espagne", SE: "Suède",
+  } as Record<string, string>,
   help: {
     title: "Aide",
     exportTitle: "Où exporter vos fichiers CSV depuis Amazon Seller Central ?",
@@ -276,8 +295,8 @@ const en: typeof fr = {
     bankTransfers: "Bank transfers",
     bankTransfersSub: "Disbursements to your account (not fees)",
     vat: "VAT",
-    vatFr: "VAT collected (France)",
-    vatFrSub: "CA3 return, French sales line",
+    vatFr: "VAT collected (home country)",
+    vatFrSub: "Domestic VAT return",
     vatOss: "VAT due via OSS",
     vatOssSub: "EU One-Stop-Shop return",
     vatToPay: "VAT to pay",
@@ -290,7 +309,7 @@ const en: typeof fr = {
     txCount: "Transactions",
     notes: "Good to know",
     regimes: {
-      DOMESTIC_FR: "French VAT",
+      DOMESTIC: "Domestic VAT",
       OSS: "OSS (EU One-Stop-Shop)",
       REVERSE_CHARGE_B2B: "B2B reverse charge",
       EXPORT: "Export outside EU (exempt)",
@@ -298,18 +317,20 @@ const en: typeof fr = {
     },
     vatNotes: {
       estimated:
-        "VAT estimated at the French standard rate of 20% (this report has no VAT detail). Upload the Amazon VAT Transactions Report for exact figures.",
+        "VAT estimated at your home country's standard rate ({country}, {rate}) — this report has no VAT detail. Upload the Amazon VAT Transactions Report for exact figures.",
       b2bReverseCharge:
         "Intra-EU B2B sales under reverse charge: no VAT due, to be declared in your EC sales list.",
-      exportExempt: "Exports outside the EU are VAT-exempt (art. 262 I of the French tax code).",
+      exportExempt: "Exports outside the EU are VAT-exempt.",
       amazonFeesReverseCharge:
         "Amazon fees (invoiced from Luxembourg) fall under reverse charge: VAT is both collected and deductible, net-zero impact if you are VAT-registered.",
+      franchiseExempt:
+        "VAT not applicable: you're under the small-business VAT exemption (franchise en base). No VAT to collect or declare on these sales — check that your revenue stays under the threshold for your status.",
     },
   },
   alerts: {
     malformedVatNumber: "{n} buyer VAT number(s) with an unusual format: {examples} — please double-check them.",
     ossThresholdExceeded:
-      "OSS threshold exceeded for {year}: {amount} in non-France EU B2C sales this year. OSS registration (or VAT registration in each destination country) is now required.",
+      "OSS threshold exceeded for {year}: {amount} in EU B2C sales outside your home country this year. OSS registration (or VAT registration in each destination country) is now required.",
     ossThresholdApproaching:
       "Approaching the €10,000 OSS threshold for {year}: {amount} so far ({remaining} left).",
     missingMonth: "No data for {month} — did you forget to upload a report for that period?",
@@ -342,8 +363,25 @@ const en: typeof fr = {
     themeSystem: "System",
     themeLight: "Light",
     themeDark: "Dark",
+    companyTitle: "Company",
+    homeCountry: "Country of establishment",
+    homeCountrySub: "The country your business is registered in — drives your domestic VAT and how your intra-EU sales are treated under OSS.",
+    vatRegime: "VAT regime",
+    vatRegimeSub: "Your VAT status.",
+    vatRegimeStandard: "VAT-registered",
+    vatRegimeStandardSub: "You charge and declare VAT normally.",
+    vatRegimeFranchise: "Small-business VAT exemption",
+    vatRegimeFranchiseSub: "Micro-entrepreneur / sole trader under the exemption threshold — no VAT charged.",
     save: "Save",
     saved: "Settings saved.",
+  },
+  countries: {
+    AT: "Austria", BE: "Belgium", BG: "Bulgaria", HR: "Croatia", CY: "Cyprus",
+    CZ: "Czechia", DK: "Denmark", EE: "Estonia", FI: "Finland", FR: "France",
+    DE: "Germany", GR: "Greece", HU: "Hungary", IE: "Ireland", IT: "Italy",
+    LV: "Latvia", LT: "Lithuania", LU: "Luxembourg", MT: "Malta", NL: "Netherlands",
+    PL: "Poland", PT: "Portugal", RO: "Romania", SK: "Slovakia", SI: "Slovenia",
+    ES: "Spain", SE: "Sweden",
   },
   help: {
     title: "Help",

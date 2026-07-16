@@ -8,9 +8,9 @@ import {
   hasMixedTypeOverlap,
   TaggedTransaction,
 } from "@/lib/aggregate";
-import { computeVatSummary } from "@/lib/vat";
+import { computeVatSummary, EU_STANDARD_VAT_RATES } from "@/lib/vat";
 import { computeAlerts } from "@/lib/alerts";
-import { formatMoney, formatMonth } from "@/lib/format";
+import { formatMoney, formatMonth, formatVatNote } from "@/lib/format";
 import AlertList from "@/components/AlertList";
 
 export const dynamic = "force-dynamic";
@@ -58,10 +58,10 @@ export default async function OverviewPage() {
     }))
   );
   const { transactions, duplicatesRemoved } = dedupeTransactions(tagged);
-  const summary = computeVatSummary(transactions);
-  const months = monthlySummaries(transactions);
+  const summary = computeVatSummary(transactions, user.homeCountry, user.vatRegime as "STANDARD" | "FRANCHISE");
+  const months = monthlySummaries(transactions, user.homeCountry, user.vatRegime as "STANDARD" | "FRANCHISE");
   const mixedOverlap = hasMixedTypeOverlap(reports);
-  const alerts = computeAlerts(transactions, months);
+  const alerts = computeAlerts(transactions, months, user.homeCountry);
   const cur = summary.currency;
   const money = (n: number) => formatMoney(n, locale, cur);
 
@@ -200,7 +200,9 @@ export default async function OverviewPage() {
           <p className="font-semibold">{t.notes}</p>
           <ul className="mt-1 list-disc pl-5 space-y-1">
             {summary.notes.map((key) => (
-              <li key={key}>{t.vatNotes[key]}</li>
+              <li key={key}>
+                {formatVatNote(key, t.vatNotes[key], locale, user.homeCountry, d.countries, EU_STANDARD_VAT_RATES)}
+              </li>
             ))}
           </ul>
         </div>

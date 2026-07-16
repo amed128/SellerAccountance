@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getDict } from "@/lib/i18n";
 import { requireUser } from "@/lib/auth";
-import { computeVatSummary } from "@/lib/vat";
-import { formatMoney } from "@/lib/format";
+import { computeVatSummary, EU_STANDARD_VAT_RATES } from "@/lib/vat";
+import { formatMoney, formatVatNote } from "@/lib/format";
 import type { NormalizedTransaction } from "@/lib/parsers/types";
 
 export const dynamic = "force-dynamic";
@@ -30,7 +30,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const t = d.dashboard;
 
   const txs = report.transactions as unknown as NormalizedTransaction[];
-  const summary = computeVatSummary(txs);
+  const summary = computeVatSummary(txs, user.homeCountry, user.vatRegime as "STANDARD" | "FRANCHISE");
   const cur = report.currency;
   const money = (n: number) => formatMoney(n, locale, cur);
 
@@ -118,7 +118,9 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           <p className="font-semibold">{t.notes}</p>
           <ul className="mt-1 list-disc pl-5 space-y-1">
             {summary.notes.map((key) => (
-              <li key={key}>{t.vatNotes[key]}</li>
+              <li key={key}>
+                {formatVatNote(key, t.vatNotes[key], locale, user.homeCountry, d.countries, EU_STANDARD_VAT_RATES)}
+              </li>
             ))}
           </ul>
         </div>

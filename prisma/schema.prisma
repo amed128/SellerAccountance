@@ -15,6 +15,11 @@ model User {
   email        String    @unique
   passwordHash String
   name         String?
+  // Seller's country of establishment (ISO 3166-1 alpha-2) and VAT status.
+  // Drives which country is "domestic" in the VAT engine and whether VAT
+  // applies at all (franchise en base / small-business exemption).
+  homeCountry  String    @default("FR")
+  vatRegime    String    @default("STANDARD") // STANDARD | FRANCHISE
   createdAt    DateTime  @default(now())
   reports      Report[]
   sessions     Session[]
