@@ -50,5 +50,5 @@ Pour utiliser la même base en local : `npx vercel env pull .env`.
 
 ## Prochaines étapes (backlog)
 
-- **Suggestions / alertes automatiques** : ajouter des vérifications (basées sur des règles, pas un agent LLM — fiabilité et auditabilité priment sur du conseil fiscal) sur les données importées : n° TVA incohérent, seuil OSS proche, mois manquant, ratio de frais anormal, etc.
-- **Auth — durcissement** : l'authentification actuelle (e-mail + mot de passe, session en base) n'a pas de vérification d'e-mail ni de réinitialisation de mot de passe ; à ajouter avant un vrai lancement public.
+- **Réinitialisation de mot de passe** : aucun moyen de récupérer son compte en cas de mot de passe oublié — blocage complet pour un utilisateur réel. Nécessite un service d'envoi d'e-mail (ex. Resend, compte gratuit à créer) ; en attente du choix du fournisseur avant implémentation.
+- **Vérification d'e-mail à l'inscription** : moins urgent que la réinitialisation (ne bloque personne), mais à ajouter avant un vrai lancement public. Dépend du même service d'e-mail.
