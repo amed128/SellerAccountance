@@ -73,6 +73,24 @@ test.describe("settings", () => {
     await expect(page.getByText("Paramètres enregistrés.")).toBeVisible();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   });
+
+  test("home country and VAT regime persist after saving", async ({ page }) => {
+    await page.goto("/settings");
+    await page.selectOption('select[name="homeCountry"]', "DE");
+    await page.getByLabel("Franchise en base de TVA").check();
+    await page.getByRole("button", { name: "Enregistrer" }).click();
+    await expect(page.getByText("Paramètres enregistrés.")).toBeVisible();
+
+    await page.reload();
+    await expect(page.locator('select[name="homeCountry"]')).toHaveValue("DE");
+    await expect(page.getByLabel("Franchise en base de TVA")).toBeChecked();
+
+    // restore to FR/STANDARD so later specs (VAT figure assertions) aren't affected
+    await page.selectOption('select[name="homeCountry"]', "FR");
+    await page.getByLabel("Assujetti à la TVA").check();
+    await page.getByRole("button", { name: "Enregistrer" }).click();
+    await expect(page.getByText("Paramètres enregistrés.")).toBeVisible();
+  });
 });
 
 test.describe("report upload", () => {
@@ -127,7 +145,7 @@ test.describe("report upload", () => {
     await page.goto("/");
     const row = page.locator("li", { hasText: "date-range-sample-fr.csv" }).first();
     await row.getByRole("link").click();
-    await expect(page.getByText(/TVA estimée au taux normal français/)).toBeVisible();
+    await expect(page.getByText(/TVA estimée au taux normal de votre pays d’établissement/)).toBeVisible();
     await expect(page.getByText("Virements bancaires")).toBeVisible();
   });
 });

@@ -1,5 +1,5 @@
 import { TaggedTransaction, MonthlySummary } from "./aggregate";
-import { EU_COUNTRIES } from "./vat";
+import { EU_COUNTRIES, DEFAULT_HOME_COUNTRY } from "./vat";
 
 // Deterministic, rule-based checks on imported data — no LLM involved.
 // False positives should be rare and clearly explainable; that matters more
@@ -34,14 +34,14 @@ function malformedVatNumberAlert(transactions: TaggedTransaction[]): Alert | nul
   return { kind: "malformedVatNumber", severity: "warning", count: bad.size, examples: [...bad].slice(0, 3) };
 }
 
-function ossThresholdAlert(transactions: TaggedTransaction[]): Alert | null {
+function ossThresholdAlert(transactions: TaggedTransaction[], homeCountry: string): Alert | null {
   const year = new Date().getFullYear();
   let base = 0;
   for (const t of transactions) {
     if (!t.date || new Date(t.date).getFullYear() !== year) continue;
     if (t.type !== "SALE" && t.type !== "REFUND") continue;
-    const arrival = t.arrivalCountry ?? "FR";
-    if (!EU_COUNTRIES.has(arrival) || arrival === "FR" || t.buyerVatNumber) continue; // B2C cross-border EU only
+    const arrival = t.arrivalCountry ?? homeCountry;
+    if (!EU_COUNTRIES.has(arrival) || arrival === homeCountry || t.buyerVatNumber) continue; // B2C cross-border EU only
     const sign = t.type === "REFUND" ? -1 : 1;
     base += (Math.abs(t.amountExclVat) || Math.abs(t.amountInclVat)) * sign;
   }
@@ -95,10 +95,14 @@ function feeRatioAlert(transactions: TaggedTransaction[]): Alert | null {
   return null;
 }
 
-export function computeAlerts(transactions: TaggedTransaction[], monthly: MonthlySummary[]): Alert[] {
+export function computeAlerts(
+  transactions: TaggedTransaction[],
+  monthly: MonthlySummary[],
+  homeCountry: string = DEFAULT_HOME_COUNTRY
+): Alert[] {
   return [
     malformedVatNumberAlert(transactions),
-    ossThresholdAlert(transactions),
+    ossThresholdAlert(transactions, homeCountry),
     ...missingMonthAlerts(monthly),
     feeRatioAlert(transactions),
   ].filter((a): a is Alert => a !== null);

@@ -3,9 +3,36 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { parseReportFile } from "@/lib/parsers";
 import { computeVatSummary } from "@/lib/vat";
+import type { NormalizedTransaction } from "@/lib/parsers/types";
 
 const sample = (name: string) =>
   readFileSync(path.join(__dirname, "../../samples", name), "utf-8");
+
+const BASE_TX: NormalizedTransaction = {
+  date: new Date("2026-06-01"),
+  type: "SALE",
+  orderId: "1",
+  sku: null,
+  description: null,
+  quantity: 1,
+  marketplace: null,
+  arrivalCountry: null,
+  departCountry: null,
+  buyerVatNumber: null,
+  amountExclVat: 0,
+  vatRate: null,
+  vatAmount: 0,
+  amountInclVat: 100,
+  fees: 0,
+  fbaFees: 0,
+  otherFees: 0,
+  total: 100,
+  currency: "EUR",
+};
+
+function tx(overrides: Partial<NormalizedTransaction>): NormalizedTransaction {
+  return { ...BASE_TX, ...overrides };
+}
 
 describe("VAT summary from the VAT Transactions sample", () => {
   const { transactions } = parseReportFile("vat.csv", sample("vat-transactions-sample.csv"));
@@ -57,5 +84,66 @@ describe("VAT summary from the Date Range sample (no VAT columns)", () => {
     expect(s.bankTransfers).toBeCloseTo(-4.86, 2);
     // -4.5-3.2-9.44-6.4+4.5-39 ; the transfer's -4.86 in "autre" must NOT count as a fee
     expect(s.totalFees).toBeCloseTo(-58.04, 2);
+  });
+});
+
+describe("non-FR home country", () => {
+  it("classifies a sale to the home country as domestic, not OSS", () => {
+    const s = computeVatSummary([tx({ arrivalCountry: "DE" })], "DE");
+    const entry = s.byCountry.find((c) => c.country === "DE");
+    expect(entry?.regime).toBe("DOMESTIC");
+    expect(s.vatCollectedFr).toBeGreaterThan(0);
+    expect(s.vatOss).toBe(0);
+  });
+
+  it("classifies a sale to a different EU country as OSS", () => {
+    const s = computeVatSummary([tx({ arrivalCountry: "FR" })], "DE");
+    const entry = s.byCountry.find((c) => c.country === "FR");
+    expect(entry?.regime).toBe("OSS");
+    expect(s.vatCollectedFr).toBe(0);
+    expect(s.vatOss).toBeGreaterThan(0);
+  });
+
+  it("estimates VAT at the home country's rate, not always 20%", () => {
+    // Germany's standard rate (19%) differs from France's (20%) — a report
+    // with no VAT detail must estimate using the seller's own country's rate.
+    const s = computeVatSummary(
+      [tx({ arrivalCountry: "DE", amountInclVat: 100, amountExclVat: 0, vatAmount: 0 })],
+      "DE"
+    );
+    expect(s.estimated).toBe(true);
+    expect(s.netRevenue).toBeCloseTo(100 / 1.19, 2);
+    expect(s.netRevenue).not.toBeCloseTo(100 / 1.2, 2);
+  });
+
+  it("still treats non-EU destinations as exports regardless of home country", () => {
+    const s = computeVatSummary([tx({ arrivalCountry: "US" })], "DE");
+    const entry = s.byCountry.find((c) => c.country === "US");
+    expect(entry?.regime).toBe("EXPORT");
+    expect(entry?.vatAmount).toBe(0);
+  });
+});
+
+describe("franchise en base (VAT-exempt small business)", () => {
+  it("zeroes out all VAT regardless of country mix", () => {
+    const s = computeVatSummary(
+      [tx({ arrivalCountry: "FR" }), tx({ orderId: "2", arrivalCountry: "DE" })],
+      "FR",
+      "FRANCHISE"
+    );
+    expect(s.vatCollectedFr).toBe(0);
+    expect(s.vatOss).toBe(0);
+    expect(s.vatToPay).toBe(0);
+    expect(s.byCountry.every((c) => c.vatAmount === 0)).toBe(true);
+  });
+
+  it("still reports revenue normally — only VAT is suppressed", () => {
+    const s = computeVatSummary([tx({ arrivalCountry: "FR", amountInclVat: 100 })], "FR", "FRANCHISE");
+    expect(s.grossRevenue).toBeCloseTo(100, 2);
+  });
+
+  it("emits only the franchise note, not the usual VAT notes", () => {
+    const s = computeVatSummary([tx({ arrivalCountry: "FR" })], "FR", "FRANCHISE");
+    expect(s.notes).toEqual(["franchiseExempt"]);
   });
 });

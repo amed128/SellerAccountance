@@ -1,6 +1,6 @@
 # SellerAccountance
 
-Comptabilité pour vendeurs Amazon : importez vos rapports Seller Central, obtenez votre chiffre d'affaires, vos frais Amazon et votre TVA à payer ou à récupérer (France + OSS).
+Comptabilité pour vendeurs Amazon en UE : importez vos rapports Seller Central, obtenez votre chiffre d'affaires, vos frais Amazon et votre TVA à payer ou à récupérer, quel que soit votre pays d'établissement dans l'UE.
 
 ## Fonctionnalités
 
@@ -10,7 +10,7 @@ Comptabilité pour vendeurs Amazon : importez vos rapports Seller Central, obten
   - Rapport de règlement (settlement, fichier plat V2)
   - Export de la vue Transactions (Paiements)
 - **Tableau de bord** : CA TTC/HT, frais Amazon, virements bancaires, mouvement net
-- **Moteur TVA France** : TVA française, OSS (B2C UE), autoliquidation B2B, exports exonérés — avec détail par pays
+- **Moteur TVA UE** : TVA nationale (relative à votre pays d'établissement), OSS (B2C UE), autoliquidation B2B, exports exonérés, franchise en base — avec détail par pays
 - Guide intégré : où exporter chaque rapport dans Seller Central
 - **Comptes utilisateurs** : chaque rapport est scopé à son propriétaire (e-mail + mot de passe, session en base)
 - **Alertes automatiques** : vérifications basées sur des règles sur les données importées (n° TVA d'un format inhabituel, seuil OSS proche/dépassé, mois manquant, ratio de frais anormal)

@@ -1,5 +1,5 @@
 import { NormalizedTransaction } from "./parsers/types";
-import { computeVatSummary, VatSummary } from "./vat";
+import { computeVatSummary, VatSummary, VatRegime, DEFAULT_HOME_COUNTRY } from "./vat";
 
 export interface TaggedTransaction extends NormalizedTransaction {
   reportId: string;
@@ -63,7 +63,11 @@ export interface MonthlySummary {
 }
 
 /** Group deduplicated transactions per calendar month (undated rows go to ""). */
-export function monthlySummaries(rows: TaggedTransaction[]): MonthlySummary[] {
+export function monthlySummaries(
+  rows: TaggedTransaction[],
+  homeCountry: string = DEFAULT_HOME_COUNTRY,
+  vatRegime: VatRegime = "STANDARD"
+): MonthlySummary[] {
   const byMonth = new Map<string, TaggedTransaction[]>();
   for (const r of rows) {
     const d = r.date ? new Date(r.date) : null;
@@ -74,7 +78,7 @@ export function monthlySummaries(rows: TaggedTransaction[]): MonthlySummary[] {
   }
   return [...byMonth.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([month, list]) => ({ month, summary: computeVatSummary(list) }));
+    .map(([month, list]) => ({ month, summary: computeVatSummary(list, homeCountry, vatRegime) }));
 }
 
 export interface ReportPeriod {

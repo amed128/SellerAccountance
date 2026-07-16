@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { dedupeTransactions, monthlySummaries, MonthlySummary, TaggedTransaction } from "@/lib/aggregate";
-import { computeVatSummary, VatSummary } from "@/lib/vat";
+import { computeVatSummary, VatSummary, VatRegime, DEFAULT_HOME_COUNTRY } from "@/lib/vat";
 import type { NormalizedTransaction } from "@/lib/parsers/types";
 
 export interface OverviewExportData {
@@ -11,7 +11,12 @@ export interface OverviewExportData {
   monthly: MonthlySummary[];
 }
 
-export async function getOverviewExportData(userId: string, overviewTitle: string): Promise<OverviewExportData> {
+export async function getOverviewExportData(
+  userId: string,
+  overviewTitle: string,
+  homeCountry: string = DEFAULT_HOME_COUNTRY,
+  vatRegime: VatRegime = "STANDARD"
+): Promise<OverviewExportData> {
   const reports = await prisma.report.findMany({
     where: { userId },
     include: { transactions: true },
@@ -26,8 +31,8 @@ export async function getOverviewExportData(userId: string, overviewTitle: strin
     }))
   );
   const { transactions } = dedupeTransactions(tagged);
-  const summary = computeVatSummary(transactions);
-  const monthly = monthlySummaries(transactions);
+  const summary = computeVatSummary(transactions, homeCountry, vatRegime);
+  const monthly = monthlySummaries(transactions, homeCountry, vatRegime);
 
   const dates = transactions
     .map((x) => (x.date ? new Date(x.date).getTime() : null))
@@ -49,12 +54,17 @@ export interface ReportExportData {
 }
 
 /** Returns null when the report doesn't exist or isn't owned by userId. */
-export async function getReportExportData(userId: string, reportId: string): Promise<ReportExportData | null> {
+export async function getReportExportData(
+  userId: string,
+  reportId: string,
+  homeCountry: string = DEFAULT_HOME_COUNTRY,
+  vatRegime: VatRegime = "STANDARD"
+): Promise<ReportExportData | null> {
   const report = await prisma.report.findUnique({ where: { id: reportId }, include: { transactions: true } });
   if (!report || report.userId !== userId) return null;
 
   const txs = report.transactions as unknown as NormalizedTransaction[];
-  const summary = computeVatSummary(txs);
+  const summary = computeVatSummary(txs, homeCountry, vatRegime);
 
   return {
     title: report.fileName,
