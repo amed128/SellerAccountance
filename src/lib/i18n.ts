@@ -130,6 +130,18 @@ const fr = {
     unusualFeeRatioLow:
       "Les frais Amazon ne représentent que {ratio} de votre CA TTC — vérifiez que le rapport importé contient bien le détail des frais.",
   },
+  export: {
+    button: "Exporter en CSV",
+    title: "SellerAccountance — Export TVA ({title})",
+    generatedOn: "Généré le",
+    period: "Période couverte",
+    reportsIncluded: "Rapports inclus",
+    summary: "Résumé",
+    indicator: "Indicateur",
+    amount: "Montant",
+    currency: "Devise",
+    monthlyBreakdown: "Détail par mois",
+  },
   settings: {
     title: "Paramètres",
     language: "Langue",
@@ -301,6 +313,18 @@ const en: typeof fr = {
     unusualFeeRatioLow:
       "Amazon fees are only {ratio} of your gross revenue — check the imported report actually includes fee detail.",
   },
+  export: {
+    button: "Export as CSV",
+    title: "SellerAccountance — VAT export ({title})",
+    generatedOn: "Generated on",
+    period: "Period covered",
+    reportsIncluded: "Reports included",
+    summary: "Summary",
+    indicator: "Indicator",
+    amount: "Amount",
+    currency: "Currency",
+    monthlyBreakdown: "Monthly breakdown",
+  },
   settings: {
     title: "Settings",
     language: "Language",
@@ -350,7 +374,7 @@ const en: typeof fr = {
   },
 };
 
-const dictionaries: Record<Locale, typeof fr> = { fr, en };
+export const dictionaries: Record<Locale, typeof fr> = { fr, en };
 
 export type Dict = typeof fr;
 
