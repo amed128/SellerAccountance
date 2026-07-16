@@ -13,6 +13,7 @@ Comptabilité pour vendeurs Amazon : importez vos rapports Seller Central, obten
 - **Moteur TVA France** : TVA française, OSS (B2C UE), autoliquidation B2B, exports exonérés — avec détail par pays
 - Guide intégré : où exporter chaque rapport dans Seller Central
 - **Comptes utilisateurs** : chaque rapport est scopé à son propriétaire (e-mail + mot de passe, session en base)
+- **Alertes automatiques** : vérifications basées sur des règles sur les données importées (n° TVA d'un format inhabituel, seuil OSS proche/dépassé, mois manquant, ratio de frais anormal)
 
 ## Stack
 
@@ -48,7 +49,6 @@ Les tests UI utilisent le Chrome installé sur la machine (`channel: "chrome"`) 
 
 Pour utiliser la même base en local : `npx vercel env pull .env`.
 
-## Prochaines étapes (backlog)
+## Backlog
 
-- **Suggestions / alertes automatiques** : ajouter des vérifications (basées sur des règles, pas un agent LLM — fiabilité et auditabilité priment sur du conseil fiscal) sur les données importées : n° TVA incohérent, seuil OSS proche, mois manquant, ratio de frais anormal, etc.
-- **Auth — durcissement** : l'authentification actuelle (e-mail + mot de passe, session en base) n'a pas de vérification d'e-mail ni de réinitialisation de mot de passe ; à ajouter avant un vrai lancement public.
+Voir [TODO.md](./TODO.md).
