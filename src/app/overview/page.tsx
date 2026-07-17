@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getDict } from "@/lib/i18n";
-import { requireUser } from "@/lib/auth";
+import { requireOnboardedUser } from "@/lib/auth";
 import {
   dedupeTransactions,
   monthlySummaries,
@@ -30,7 +30,7 @@ function monthLabel(month: string, locale: string, undated: string) {
 }
 
 export default async function OverviewPage() {
-  const user = await requireUser();
+  const user = await requireOnboardedUser();
   const [reports, { locale, d }] = await Promise.all([
     prisma.report.findMany({
       where: { userId: user.id },

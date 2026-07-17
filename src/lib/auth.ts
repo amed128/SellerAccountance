@@ -63,3 +63,13 @@ export async function requireUser() {
   if (!user) redirect("/login");
   return user;
 }
+
+// Same as requireUser(), but also sends first-time users to the onboarding
+// wizard until they've deliberately set their home country / VAT regime.
+// Not used by the onboarding page itself (that would redirect-loop) or by
+// settings, which stays reachable once onboarded to change these values.
+export async function requireOnboardedUser() {
+  const user = await requireUser();
+  if (!user.onboarded) redirect("/onboarding");
+  return user;
+}

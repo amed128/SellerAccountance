@@ -170,6 +170,12 @@ const fr = {
     save: "Enregistrer",
     saved: "Paramètres enregistrés.",
   },
+  onboarding: {
+    title: "Bienvenue sur SellerAccountance",
+    subtitle:
+      "Avant de commencer, indiquez le pays d’établissement de votre entreprise et son régime de TVA — ces informations déterminent comment l’application calcule votre TVA et vos rapports. Vous pourrez les modifier à tout moment depuis les paramètres.",
+    start: "Commencer",
+  },
   countries: {
     AT: "Autriche", BE: "Belgique", BG: "Bulgarie", HR: "Croatie", CY: "Chypre",
     CZ: "Tchéquie", DK: "Danemark", EE: "Estonie", FI: "Finlande", FR: "France",
@@ -374,6 +380,12 @@ const en: typeof fr = {
     vatRegimeFranchiseSub: "Micro-entrepreneur / sole trader under the exemption threshold — no VAT charged.",
     save: "Save",
     saved: "Settings saved.",
+  },
+  onboarding: {
+    title: "Welcome to SellerAccountance",
+    subtitle:
+      "Before you get started, tell us your business's country of establishment and VAT regime — this drives how the app calculates your VAT and reports. You can change this anytime from Settings.",
+    start: "Get started",
   },
   countries: {
     AT: "Austria", BE: "Belgium", BG: "Bulgaria", HR: "Croatia", CY: "Cyprus",

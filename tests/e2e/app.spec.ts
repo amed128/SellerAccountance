@@ -21,6 +21,39 @@ test.describe("navigation and static pages", () => {
   });
 });
 
+test.describe("onboarding wizard", () => {
+  // Fresh, unauthenticated context — the shared e2e user is already onboarded.
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  test("new user is gated to the wizard, then unlocked after completing it", async ({ page }) => {
+    await page.goto("/signup");
+    await page.fill("#name", "Onboarding Test");
+    await page.fill("#email", `onboarding-${Date.now()}@example.com`);
+    await page.fill("#password", "onboarding-test-password");
+    await Promise.all([page.waitForURL(/\/onboarding$/), page.click('button[type="submit"]')]);
+
+    // Direct navigation to another gated page also bounces back to the wizard.
+    await page.goto("/settings");
+    await expect(page).toHaveURL(/\/onboarding$/);
+
+    await page.selectOption('select[name="homeCountry"]', "DE");
+    await page.getByLabel("Franchise en base de TVA").check();
+    await Promise.all([
+      page.waitForURL(/localhost:3100\/$/),
+      page.getByRole("button", { name: "Commencer" }).click(),
+    ]);
+
+    // Revisiting /onboarding once completed redirects home, not back to the wizard.
+    await page.goto("/onboarding");
+    await expect(page).toHaveURL(/localhost:3100\/$/);
+
+    // The choice made in the wizard is reflected in settings.
+    await page.goto("/settings");
+    await expect(page.locator('select[name="homeCountry"]')).toHaveValue("DE");
+    await expect(page.getByLabel("Franchise en base de TVA")).toBeChecked();
+  });
+});
+
 test.describe("mobile navigation menu", () => {
   test.use({ viewport: { width: 375, height: 700 } });
 
