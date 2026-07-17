@@ -14,10 +14,9 @@ export function formatMonth(month: string, locale: string) {
   });
 }
 
-/**
- * The "estimated" VAT note is the only one with placeholders — it names the
- * home country and its rate, since the estimate is no longer always 20%/FR.
- */
+// Note keys whose text has {country}/{rate} placeholders to fill in.
+const NOTES_WITH_RATE_PLACEHOLDERS = new Set(["estimated", "franchiseFeesReverseCharge"]);
+
 export function formatVatNote(
   key: string,
   text: string,
@@ -26,7 +25,7 @@ export function formatVatNote(
   countryNames: Record<string, string>,
   vatRates: Record<string, number>
 ): string {
-  if (key !== "estimated") return text;
+  if (!NOTES_WITH_RATE_PLACEHOLDERS.has(key)) return text;
   const rate = (vatRates[homeCountry] ?? vatRates.FR).toLocaleString(locale === "en" ? "en-GB" : "fr-FR", {
     style: "percent",
     maximumFractionDigits: 1,

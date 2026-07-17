@@ -147,3 +147,40 @@ describe("franchise en base (VAT-exempt small business)", () => {
     expect(s.notes).toEqual(["franchiseExempt"]);
   });
 });
+
+describe("Amazon fees reverse charge (self-assessed VAT on fees)", () => {
+  it("is due and deductible for a STANDARD-regime seller — net-zero impact on vatToPay", () => {
+    const s = computeVatSummary(
+      [tx({ arrivalCountry: "FR", fees: -50, fbaFees: -20, otherFees: 0 })],
+      "FR",
+      "STANDARD"
+    );
+    // FR rate 20%, fees HT 70 => VAT 14
+    expect(s.feesReverseChargeVatDue).toBeCloseTo(14, 2);
+    expect(s.feesReverseChargeVatDeductible).toBeCloseTo(14, 2);
+    expect(s.notes).toContain("amazonFeesReverseCharge");
+    // vatCollectedFr from the base sale (100 incl @ 20%) is 16.67; fees due/deductible cancel out
+    expect(s.vatToPay).toBeCloseTo(s.vatCollectedFr + s.vatOss, 2);
+  });
+
+  it("is due but NOT deductible for a FRANCHISE seller — a real added cost", () => {
+    const s = computeVatSummary(
+      [tx({ arrivalCountry: "FR", fees: -50, fbaFees: -20, otherFees: 0 })],
+      "FR",
+      "FRANCHISE"
+    );
+    expect(s.feesReverseChargeVatDue).toBeCloseTo(14, 2);
+    expect(s.feesReverseChargeVatDeductible).toBe(0);
+    expect(s.vatCollectedFr).toBe(0);
+    expect(s.vatOss).toBe(0);
+    // Unlike a plain franchise seller with no fees, vatToPay is no longer zero.
+    expect(s.vatToPay).toBeCloseTo(14, 2);
+    expect(s.notes).toEqual(["franchiseExempt", "franchiseFeesReverseCharge"]);
+  });
+
+  it("is skipped entirely when the report carries no fee data", () => {
+    const s = computeVatSummary([tx({ arrivalCountry: "FR" })], "FR", "STANDARD");
+    expect(s.feesReverseChargeVatDue).toBe(0);
+    expect(s.notes).not.toContain("amazonFeesReverseCharge");
+  });
+});

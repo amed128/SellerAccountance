@@ -76,6 +76,17 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
         <Card label={t.vatFr} value={money(summary.vatCollectedFr)} sub={t.vatFrSub} />
         <Card label={t.vatOss} value={money(summary.vatOss)} sub={t.vatOssSub} />
+        {summary.feesReverseChargeVatDue !== 0 && (
+          <Card
+            label={t.feesReverseChargeVat}
+            value={money(summary.feesReverseChargeVatDue)}
+            sub={
+              summary.feesReverseChargeVatDeductible > 0
+                ? t.feesReverseChargeVatSubDeductible
+                : t.feesReverseChargeVatSubNotDeductible
+            }
+          />
+        )}
         <Card
           label={summary.vatToPay >= 0 ? t.vatToPay : t.vatToClaim}
           value={money(Math.abs(summary.vatToPay))}

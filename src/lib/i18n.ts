@@ -96,6 +96,9 @@ const fr = {
     vatOssSub: "Déclaration guichet unique UE",
     vatToPay: "TVA à payer",
     vatToClaim: "TVA à récupérer",
+    feesReverseChargeVat: "TVA sur frais Amazon (autoliquidation)",
+    feesReverseChargeVatSubDeductible: "Due et déductible — impact net nul",
+    feesReverseChargeVatSubNotDeductible: "Due mais non déductible (franchise en base) — coût réel",
     byCountry: "Détail par pays",
     country: "Pays",
     regime: "Régime",
@@ -120,6 +123,8 @@ const fr = {
         "Les frais Amazon (facturés depuis le Luxembourg) sont en autoliquidation : TVA à la fois collectée et déductible, impact net nul si vous êtes assujetti.",
       franchiseExempt:
         "TVA non applicable : vous êtes en franchise en base de TVA. Aucune TVA à collecter ni à déclarer sur ces ventes — vérifiez que votre chiffre d’affaires reste sous les seuils applicables à votre statut.",
+      franchiseFeesReverseCharge:
+        "Vos frais Amazon restent soumis à autoliquidation de TVA malgré la franchise en base : TVA due au taux de {country} ({rate}) sur ces frais, mais non déductible — c'est un coût réel. Cela nécessite un numéro de TVA intracommunautaire dédié à cet usage.",
     } as Record<string, string>,
   },
   alerts: {
@@ -307,6 +312,9 @@ const en: typeof fr = {
     vatOssSub: "EU One-Stop-Shop return",
     vatToPay: "VAT to pay",
     vatToClaim: "VAT to reclaim",
+    feesReverseChargeVat: "VAT on Amazon fees (reverse charge)",
+    feesReverseChargeVatSubDeductible: "Due and deductible — net-zero impact",
+    feesReverseChargeVatSubNotDeductible: "Due but not deductible (franchise regime) — a real cost",
     byCountry: "Breakdown by country",
     country: "Country",
     regime: "Regime",
@@ -331,6 +339,8 @@ const en: typeof fr = {
         "Amazon fees (invoiced from Luxembourg) fall under reverse charge: VAT is both collected and deductible, net-zero impact if you are VAT-registered.",
       franchiseExempt:
         "VAT not applicable: you're under the small-business VAT exemption (franchise en base). No VAT to collect or declare on these sales — check that your revenue stays under the threshold for your status.",
+      franchiseFeesReverseCharge:
+        "Your Amazon fees remain subject to VAT reverse charge despite the franchise exemption: VAT is due at your home rate ({country}, {rate}) on these fees, but not deductible — a real cost. This requires a dedicated intra-EU VAT number for this purpose.",
     },
   },
   alerts: {

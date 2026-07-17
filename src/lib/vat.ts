@@ -52,7 +52,15 @@ export interface VatSummary {
   vatCollectedFr: number; // TVA collectée sur le pays d'établissement du vendeur
   vatOss: number; // TVA due via guichet OSS (B2C UE hors pays d'établissement)
   vatOnRefunds: number; // TVA récupérée sur remboursements (already netted in the above)
-  vatToPay: number; // total à décaisser (domestique + OSS)
+  // Amazon fees (referral, FBA, storage — invoiced from Luxembourg) are
+  // reverse-charged: the seller self-assesses VAT at their home rate on top
+  // of the fee amount. Due applies regardless of VAT regime (reverse charge
+  // on received B2B services is a separate obligation from charging VAT on
+  // sales), but only a STANDARD-regime seller can deduct it — for FRANCHISE
+  // sellers it's a real cost, since franchise en base blocks all deduction.
+  feesReverseChargeVatDue: number;
+  feesReverseChargeVatDeductible: number;
+  vatToPay: number; // total à décaisser (domestique + OSS + autoliquidation frais − déductible)
   byCountry: VatByCountry[];
   estimated: boolean; // true when VAT was estimated (report had no VAT columns)
   notes: VatNoteKey[]; // translation keys, resolved in the UI
@@ -63,7 +71,8 @@ export type VatNoteKey =
   | "b2bReverseCharge"
   | "exportExempt"
   | "amazonFeesReverseCharge"
-  | "franchiseExempt";
+  | "franchiseExempt"
+  | "franchiseFeesReverseCharge";
 
 function classifyRegime(t: NormalizedTransaction, homeCountry: string): VatByCountry["regime"] {
   const arrival = t.arrivalCountry ?? homeCountry;
@@ -148,13 +157,20 @@ export function computeVatSummary(
   const vatCollectedFr = entries.filter((e) => e.regime === "DOMESTIC").reduce((s, e) => s + e.vatAmount, 0);
   const vatOss = entries.filter((e) => e.regime === "OSS").reduce((s, e) => s + e.vatAmount, 0);
 
+  // Fees are recorded HT (Amazon doesn't actually charge VAT on them, the
+  // reverse charge is a purely declarative self-assessment) — no incl/excl
+  // split needed, just apply the home rate directly.
+  const feesReverseChargeVatDue = Math.abs(totalFees) * homeRate;
+  const feesReverseChargeVatDeductible = vatRegime === "STANDARD" ? feesReverseChargeVatDue : 0;
+
   if (vatRegime === "FRANCHISE") {
     notes.push("franchiseExempt");
+    if (feesReverseChargeVatDue !== 0) notes.push("franchiseFeesReverseCharge");
   } else {
     if (estimated) notes.push("estimated");
     if (entries.some((e) => e.regime === "REVERSE_CHARGE_B2B")) notes.push("b2bReverseCharge");
     if (entries.some((e) => e.regime === "EXPORT")) notes.push("exportExempt");
-    notes.push("amazonFeesReverseCharge");
+    if (feesReverseChargeVatDue !== 0) notes.push("amazonFeesReverseCharge");
   }
 
   return {
@@ -167,7 +183,9 @@ export function computeVatSummary(
     vatCollectedFr,
     vatOss,
     vatOnRefunds,
-    vatToPay: vatCollectedFr + vatOss,
+    feesReverseChargeVatDue,
+    feesReverseChargeVatDeductible,
+    vatToPay: vatCollectedFr + vatOss + feesReverseChargeVatDue - feesReverseChargeVatDeductible,
     byCountry: entries,
     estimated,
     notes,
