@@ -108,6 +108,15 @@ export function VatExportDocument({
         )}
         <Row cells={[{ text: t.vatFr, flex: 2 }, { text: money(s.vatCollectedFr), right: true }]} rowStyle="row" />
         <Row cells={[{ text: t.vatOss, flex: 2 }, { text: money(s.vatOss), right: true }]} rowStyle="row" />
+        {s.feesReverseChargeVatDue !== 0 && (
+          <Row
+            cells={[
+              { text: t.feesReverseChargeVat, flex: 2 },
+              { text: money(s.feesReverseChargeVatDue), right: true },
+            ]}
+            rowStyle="row"
+          />
+        )}
         <Row
           cells={[
             { text: s.vatToPay >= 0 ? t.vatToPay : t.vatToClaim, flex: 2 },

@@ -180,5 +180,8 @@ test.describe("report upload", () => {
     await row.getByRole("link").click();
     await expect(page.getByText(/TVA estimée au taux normal de votre pays d’établissement/)).toBeVisible();
     await expect(page.getByText("Virements bancaires")).toBeVisible();
+    // Fees reverse charge: this report has fee data, so the card must render.
+    await expect(page.getByText("TVA sur frais Amazon (autoliquidation)")).toBeVisible();
+    await expect(page.getByText("Due et déductible — impact net nul")).toBeVisible();
   });
 });

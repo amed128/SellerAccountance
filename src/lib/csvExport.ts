@@ -54,6 +54,9 @@ export function buildVatExportCsv(input: VatExportInput, locale: Locale, d: Dict
   if (s.bankTransfers !== 0) rows.push([t.bankTransfers, amt(Math.abs(s.bankTransfers)), cur]);
   rows.push([t.vatFr, amt(s.vatCollectedFr), cur]);
   rows.push([t.vatOss, amt(s.vatOss), cur]);
+  if (s.feesReverseChargeVatDue !== 0) {
+    rows.push([t.feesReverseChargeVat, amt(s.feesReverseChargeVatDue), cur]);
+  }
   rows.push([s.vatToPay >= 0 ? t.vatToPay : t.vatToClaim, amt(Math.abs(s.vatToPay)), cur]);
   rows.push([]);
 
