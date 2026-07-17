@@ -31,12 +31,13 @@ function monthLabel(month: string, locale: string, undated: string) {
 
 export default async function OverviewPage() {
   const user = await requireOnboardedUser();
-  const [reports, { locale, d }] = await Promise.all([
+  const [reports, sourcingInvoices, { locale, d }] = await Promise.all([
     prisma.report.findMany({
       where: { userId: user.id },
       include: { transactions: true },
       orderBy: { uploadedAt: "asc" },
     }),
+    prisma.sourcingInvoice.findMany({ where: { userId: user.id } }),
     getDict(),
   ]);
   const t = d.dashboard;
@@ -58,8 +59,9 @@ export default async function OverviewPage() {
     }))
   );
   const { transactions, duplicatesRemoved } = dedupeTransactions(tagged);
-  const summary = computeVatSummary(transactions, user.homeCountry, user.vatRegime as "STANDARD" | "FRANCHISE");
-  const months = monthlySummaries(transactions, user.homeCountry, user.vatRegime as "STANDARD" | "FRANCHISE");
+  const vatRegime = user.vatRegime as "STANDARD" | "FRANCHISE";
+  const summary = computeVatSummary(transactions, user.homeCountry, vatRegime, sourcingInvoices);
+  const months = monthlySummaries(transactions, user.homeCountry, vatRegime, sourcingInvoices);
   const mixedOverlap = hasMixedTypeOverlap(reports);
   const alerts = computeAlerts(transactions, months, user.homeCountry);
   const cur = summary.currency;
@@ -143,6 +145,21 @@ export default async function OverviewPage() {
                 ? t.feesReverseChargeVatSubDeductible
                 : t.feesReverseChargeVatSubNotDeductible
             }
+          />
+        )}
+        {summary.sourcingDeductibleVat !== 0 && (
+          <Card
+            label={t.sourcingDeductibleVat}
+            value={money(summary.sourcingDeductibleVat)}
+            sub={t.sourcingDeductibleVatSub}
+            accent="text-green-600"
+          />
+        )}
+        {summary.sourcingNonDeductibleVat !== 0 && (
+          <Card
+            label={t.sourcingNonDeductibleVat}
+            value={money(summary.sourcingNonDeductibleVat)}
+            sub={t.sourcingNonDeductibleVatSub}
           />
         )}
         <Card

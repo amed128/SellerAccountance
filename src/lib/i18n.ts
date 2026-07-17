@@ -100,6 +100,10 @@ const fr = {
     feesReverseChargeVat: "TVA sur frais Amazon (autoliquidation)",
     feesReverseChargeVatSubDeductible: "Due et déductible — impact net nul",
     feesReverseChargeVatSubNotDeductible: "Due mais non déductible (franchise en base) — coût réel",
+    sourcingDeductibleVat: "TVA déductible (achats fournisseurs)",
+    sourcingDeductibleVatSub: "À déduire de la TVA à payer",
+    sourcingNonDeductibleVat: "TVA non déductible (achats fournisseurs)",
+    sourcingNonDeductibleVatSub: "Franchise en base, ou import en attente du document de dédouanement",
     byCountry: "Détail par pays",
     country: "Pays",
     regime: "Régime",
@@ -126,6 +130,10 @@ const fr = {
         "TVA non applicable : vous êtes en franchise en base de TVA. Aucune TVA à collecter ni à déclarer sur ces ventes — vérifiez que votre chiffre d’affaires reste sous les seuils applicables à votre statut.",
       franchiseFeesReverseCharge:
         "Vos frais Amazon restent soumis à autoliquidation de TVA malgré la franchise en base : TVA due au taux de {country} ({rate}) sur ces frais, mais non déductible — c'est un coût réel. Cela nécessite un numéro de TVA intracommunautaire dédié à cet usage.",
+      franchiseSourcingNotDeductible:
+        "Comme pour vos ventes, la TVA sur vos factures fournisseurs (Achats) n'est pas déductible sous le régime de la franchise en base — elle reste intégrée à votre coût.",
+      sourcingImportVatWithheld:
+        "La TVA à l'importation sur vos factures fournisseurs (Achats) n'est pas déduite automatiquement : la déduction nécessite le document de dédouanement, pas seulement la facture commerciale. Ajoutez-la manuellement à votre déclaration une fois ce document en votre possession.",
     } as Record<string, string>,
   },
   alerts: {
@@ -342,6 +350,10 @@ const en: typeof fr = {
     feesReverseChargeVat: "VAT on Amazon fees (reverse charge)",
     feesReverseChargeVatSubDeductible: "Due and deductible — net-zero impact",
     feesReverseChargeVatSubNotDeductible: "Due but not deductible (franchise regime) — a real cost",
+    sourcingDeductibleVat: "Deductible VAT (supplier invoices)",
+    sourcingDeductibleVatSub: "Deducted from VAT to pay",
+    sourcingNonDeductibleVat: "Non-deductible VAT (supplier invoices)",
+    sourcingNonDeductibleVatSub: "Franchise regime, or import pending the customs clearance document",
     byCountry: "Breakdown by country",
     country: "Country",
     regime: "Regime",
@@ -368,6 +380,10 @@ const en: typeof fr = {
         "VAT not applicable: you're under the small-business VAT exemption (franchise en base). No VAT to collect or declare on these sales — check that your revenue stays under the threshold for your status.",
       franchiseFeesReverseCharge:
         "Your Amazon fees remain subject to VAT reverse charge despite the franchise exemption: VAT is due at your home rate ({country}, {rate}) on these fees, but not deductible — a real cost. This requires a dedicated intra-EU VAT number for this purpose.",
+      franchiseSourcingNotDeductible:
+        "As with your sales, VAT on your supplier invoices (Purchases) isn't deductible under the small-business VAT exemption — it remains part of your cost.",
+      sourcingImportVatWithheld:
+        "Import VAT on your supplier invoices (Purchases) isn't deducted automatically: deduction requires the customs clearance document, not just the commercial invoice. Add it to your declaration manually once you hold that document.",
     },
   },
   alerts: {

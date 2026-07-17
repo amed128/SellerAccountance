@@ -57,6 +57,12 @@ export function buildVatExportCsv(input: VatExportInput, locale: Locale, d: Dict
   if (s.feesReverseChargeVatDue !== 0) {
     rows.push([t.feesReverseChargeVat, amt(s.feesReverseChargeVatDue), cur]);
   }
+  if (s.sourcingDeductibleVat !== 0) {
+    rows.push([t.sourcingDeductibleVat, amt(s.sourcingDeductibleVat), cur]);
+  }
+  if (s.sourcingNonDeductibleVat !== 0) {
+    rows.push([t.sourcingNonDeductibleVat, amt(s.sourcingNonDeductibleVat), cur]);
+  }
   rows.push([s.vatToPay >= 0 ? t.vatToPay : t.vatToClaim, amt(Math.abs(s.vatToPay)), cur]);
   rows.push([]);
 

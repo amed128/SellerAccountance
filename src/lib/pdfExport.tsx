@@ -117,6 +117,24 @@ export function VatExportDocument({
             rowStyle="row"
           />
         )}
+        {s.sourcingDeductibleVat !== 0 && (
+          <Row
+            cells={[
+              { text: t.sourcingDeductibleVat, flex: 2 },
+              { text: money(s.sourcingDeductibleVat), right: true },
+            ]}
+            rowStyle="row"
+          />
+        )}
+        {s.sourcingNonDeductibleVat !== 0 && (
+          <Row
+            cells={[
+              { text: t.sourcingNonDeductibleVat, flex: 2 },
+              { text: money(s.sourcingNonDeductibleVat), right: true },
+            ]}
+            rowStyle="row"
+          />
+        )}
         <Row
           cells={[
             { text: s.vatToPay >= 0 ? t.vatToPay : t.vatToClaim, flex: 2 },
