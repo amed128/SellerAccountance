@@ -28,6 +28,9 @@ export default async function Nav() {
               <Link href="/overview" className={linkClass}>
                 {d.nav.overview}
               </Link>
+              <Link href="/sourcing" className={linkClass}>
+                {d.nav.sourcing}
+              </Link>
               <Link href="/help" className={linkClass}>
                 {d.nav.help}
               </Link>
