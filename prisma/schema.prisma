@@ -11,22 +11,23 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  passwordHash String
-  name         String?
+  id               String            @id @default(cuid())
+  email            String            @unique
+  passwordHash     String
+  name             String?
   // Seller's country of establishment (ISO 3166-1 alpha-2) and VAT status.
   // Drives which country is "domestic" in the VAT engine and whether VAT
   // applies at all (franchise en base / small-business exemption).
-  homeCountry  String    @default("FR")
-  vatRegime    String    @default("STANDARD") // STANDARD | FRANCHISE
+  homeCountry      String            @default("FR")
+  vatRegime        String            @default("STANDARD") // STANDARD | FRANCHISE
   // Has the user completed the first-launch configuration wizard? Gates
   // access to the rest of the app until home country / VAT regime are set
   // deliberately, rather than silently relying on the FR/STANDARD defaults.
-  onboarded    Boolean   @default(false)
-  createdAt    DateTime  @default(now())
-  reports      Report[]
-  sessions     Session[]
+  onboarded        Boolean           @default(false)
+  createdAt        DateTime          @default(now())
+  reports          Report[]
+  sessions         Session[]
+  sourcingInvoices SourcingInvoice[]
 }
 
 // Opaque-token database session (cookie holds only the token).
@@ -64,27 +65,55 @@ model Transaction {
   reportId String
   report   Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
 
-  date            DateTime?
-  type            String // SALE | REFUND | FEE | FBA_FEE | OTHER | LIQUIDATION | SHIPMENT ...
-  orderId         String?
-  sku             String?
-  description     String?
-  quantity        Int       @default(0)
-  marketplace     String?
-  arrivalCountry  String? // ship-to country (VAT report)
-  departCountry   String? // ship-from country (VAT report)
-  buyerVatNumber  String? // present => B2B
-  amountExclVat   Float     @default(0)
-  vatRate         Float? // e.g. 0.20
-  vatAmount       Float     @default(0)
-  amountInclVat   Float     @default(0)
-  fees            Float     @default(0) // selling fees (negative)
-  fbaFees         Float     @default(0) // fulfillment fees (negative)
-  otherFees       Float     @default(0)
-  total           Float     @default(0) // net movement for this row
-  currency        String    @default("EUR")
+  date           DateTime?
+  type           String // SALE | REFUND | FEE | FBA_FEE | OTHER | LIQUIDATION | SHIPMENT ...
+  orderId        String?
+  sku            String?
+  description    String?
+  quantity       Int       @default(0)
+  marketplace    String?
+  arrivalCountry String? // ship-to country (VAT report)
+  departCountry  String? // ship-from country (VAT report)
+  buyerVatNumber String? // present => B2B
+  amountExclVat  Float     @default(0)
+  vatRate        Float? // e.g. 0.20
+  vatAmount      Float     @default(0)
+  amountInclVat  Float     @default(0)
+  fees           Float     @default(0) // selling fees (negative)
+  fbaFees        Float     @default(0) // fulfillment fees (negative)
+  otherFees      Float     @default(0)
+  total          Float     @default(0) // net movement for this row
+  currency       String    @default("EUR")
 
   @@index([reportId])
   @@index([type])
   @@index([arrivalCountry])
+}
+
+// Manually entered supplier invoice for sourced goods (COGS input). Amazon
+// reports never carry purchase data, so this is the seller's own record —
+// amounts are kept exactly as shown on the invoice (HT/VAT/TTC), not
+// recomputed from a rate, to match what the source document says.
+model SourcingInvoice {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  supplier      String
+  date          DateTime
+  sku           String
+  quantity      Int
+  amountExclVat Float // HT
+  vatAmount     Float    @default(0)
+  amountInclVat Float // TTC
+  currency      String   @default("EUR")
+  // How VAT applies to this purchase, for the future deduction step:
+  // DOMESTIC (supplier in the same country, VAT charged normally) |
+  // REVERSE_CHARGE (intra-EU supplier, self-assessed) |
+  // IMPORT (non-EU supplier, VAT paid at customs — deduction needs the
+  // customs document, not just this commercial invoice).
+  vatTreatment  String
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+  @@index([sku])
 }

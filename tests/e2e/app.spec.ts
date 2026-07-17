@@ -185,3 +185,46 @@ test.describe("report upload", () => {
     await expect(page.getByText("Due et déductible — impact net nul")).toBeVisible();
   });
 });
+
+test.describe("sourcing invoices", () => {
+  test("add an invoice, see it listed, then delete it", async ({ page }) => {
+    await page.goto("/sourcing");
+    await page.fill("#supplier", "Shenzhen Gadgets Co.");
+    await page.fill("#date", "2026-06-01");
+    await page.fill("#sku", "SKU-RED-01");
+    await page.fill("#quantity", "100");
+    await page.fill("#amountExclVat", "500");
+    await page.fill("#vatAmount", "0");
+    await page.fill("#amountInclVat", "500");
+    await page.selectOption("select[name='currency']", "USD");
+    await page.getByLabel("Autoliquidation intracommunautaire (fournisseur UE)").click();
+    await Promise.all([
+      page.waitForURL(/\/sourcing\?saved=1$/),
+      page.getByRole("button", { name: "Ajouter" }).click(),
+    ]);
+    await expect(page.getByText("Facture ajoutée.")).toBeVisible();
+
+    const row = page.locator("tr", { hasText: "Shenzhen Gadgets Co." });
+    await expect(row).toBeVisible();
+    await expect(row.getByText("SKU-RED-01")).toBeVisible();
+    await expect(row.getByText("Autoliquidation intracommunautaire (fournisseur UE)")).toBeVisible();
+
+    await row.getByRole("button", { name: /Supprimer/ }).click();
+    await expect(page.locator("tr", { hasText: "Shenzhen Gadgets Co." })).toHaveCount(0);
+  });
+
+  test("rejects a zero HT amount (server-side check, not caught by the HTML min attribute)", async ({ page }) => {
+    await page.goto("/sourcing");
+    await page.fill("#supplier", "Zero Amount Supplier");
+    await page.fill("#date", "2026-06-01");
+    await page.fill("#sku", "SKU-ZERO");
+    await page.fill("#amountExclVat", "0");
+    await page.fill("#amountInclVat", "0");
+    await Promise.all([
+      page.waitForURL(/\/sourcing\?error=invalid$/),
+      page.getByRole("button", { name: "Ajouter" }).click(),
+    ]);
+    await expect(page.getByText("Vérifiez les champs du formulaire")).toBeVisible();
+    await expect(page.locator("tr", { hasText: "Zero Amount Supplier" })).toHaveCount(0);
+  });
+});
