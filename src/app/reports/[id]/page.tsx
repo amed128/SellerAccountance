@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getDict } from "@/lib/i18n";
-import { requireUser } from "@/lib/auth";
+import { requireOnboardedUser } from "@/lib/auth";
 import { computeVatSummary, EU_STANDARD_VAT_RATES } from "@/lib/vat";
 import { formatMoney, formatVatNote } from "@/lib/format";
 import type { NormalizedTransaction } from "@/lib/parsers/types";
@@ -22,7 +22,7 @@ function Card({ label, value, accent, sub }: { label: string; value: string; acc
 export default async function ReportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const [user, report, { locale, d }] = await Promise.all([
-    requireUser(),
+    requireOnboardedUser(),
     prisma.report.findUnique({ where: { id }, include: { transactions: true } }),
     getDict(),
   ]);

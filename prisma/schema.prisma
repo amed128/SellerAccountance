@@ -20,6 +20,10 @@ model User {
   // applies at all (franchise en base / small-business exemption).
   homeCountry  String    @default("FR")
   vatRegime    String    @default("STANDARD") // STANDARD | FRANCHISE
+  // Has the user completed the first-launch configuration wizard? Gates
+  // access to the rest of the app until home country / VAT regime are set
+  // deliberately, rather than silently relying on the FR/STANDARD defaults.
+  onboarded    Boolean   @default(false)
   createdAt    DateTime  @default(now())
   reports      Report[]
   sessions     Session[]

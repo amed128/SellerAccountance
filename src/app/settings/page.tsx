@@ -1,6 +1,6 @@
 import { getDict } from "@/lib/i18n";
 import { getTheme } from "@/lib/theme";
-import { requireUser } from "@/lib/auth";
+import { requireOnboardedUser } from "@/lib/auth";
 import { EU_COUNTRY_CODES } from "@/lib/vat";
 import { saveSettings } from "./actions";
 
@@ -15,7 +15,7 @@ export default async function SettingsPage({
     getDict(),
     getTheme(),
     searchParams,
-    requireUser(),
+    requireOnboardedUser(),
   ]);
 
   const countryOptions = [...EU_COUNTRY_CODES].sort((a, b) =>

@@ -16,7 +16,15 @@ export default async function globalSetup(config: FullConfig) {
   await page.fill("#name", "E2E Test");
   await page.fill("#email", "e2e@example.com");
   await page.fill("#password", "e2e-test-password");
-  await Promise.all([page.waitForURL(`${baseURL}/`), page.click('button[type="submit"]')]);
+  await Promise.all([page.waitForURL(`${baseURL}/onboarding`), page.click('button[type="submit"]')]);
+
+  // First-launch wizard: accept the defaults (FR / STANDARD) to reach "/".
+  // Scoped by accessible name — the nav's logout button is also a bare
+  // button[type="submit"] and would otherwise match first.
+  await Promise.all([
+    page.waitForURL(`${baseURL}/`),
+    page.getByRole("button", { name: "Commencer" }).click(),
+  ]);
 
   await page.context().storageState({ path: "tests/e2e/.auth/user.json" });
   await browser.close();
