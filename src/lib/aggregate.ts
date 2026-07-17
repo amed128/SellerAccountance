@@ -1,5 +1,5 @@
 import { NormalizedTransaction } from "./parsers/types";
-import { computeVatSummary, VatSummary, VatRegime, DEFAULT_HOME_COUNTRY } from "./vat";
+import { computeVatSummary, VatSummary, VatRegime, SourcingInvoiceInput, DEFAULT_HOME_COUNTRY } from "./vat";
 
 export interface TaggedTransaction extends NormalizedTransaction {
   reportId: string;
@@ -62,23 +62,45 @@ export interface MonthlySummary {
   summary: VatSummary;
 }
 
-/** Group deduplicated transactions per calendar month (undated rows go to ""). */
+function monthKey(d: Date | null): string {
+  const dt = d ? new Date(d) : null;
+  return dt ? `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}` : "";
+}
+
+/**
+ * Group deduplicated transactions (and, if given, sourcing invoices) per
+ * calendar month (undated rows go to ""), so the monthly breakdown sums to
+ * the same totals as the aggregate summary computed over everything at once.
+ */
 export function monthlySummaries(
   rows: TaggedTransaction[],
   homeCountry: string = DEFAULT_HOME_COUNTRY,
-  vatRegime: VatRegime = "STANDARD"
+  vatRegime: VatRegime = "STANDARD",
+  sourcingInvoices: SourcingInvoiceInput[] = []
 ): MonthlySummary[] {
   const byMonth = new Map<string, TaggedTransaction[]>();
   for (const r of rows) {
-    const d = r.date ? new Date(r.date) : null;
-    const month = d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}` : "";
+    const month = monthKey(r.date);
     const list = byMonth.get(month);
     if (list) list.push(r);
     else byMonth.set(month, [r]);
   }
-  return [...byMonth.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([month, list]) => ({ month, summary: computeVatSummary(list, homeCountry, vatRegime) }));
+
+  const invoicesByMonth = new Map<string, SourcingInvoiceInput[]>();
+  for (const inv of sourcingInvoices) {
+    const month = monthKey(inv.date);
+    const list = invoicesByMonth.get(month);
+    if (list) list.push(inv);
+    else invoicesByMonth.set(month, [inv]);
+  }
+
+  const months = new Set([...byMonth.keys(), ...invoicesByMonth.keys()]);
+  return [...months]
+    .sort((a, b) => a.localeCompare(b))
+    .map((month) => ({
+      month,
+      summary: computeVatSummary(byMonth.get(month) ?? [], homeCountry, vatRegime, invoicesByMonth.get(month) ?? []),
+    }));
 }
 
 export interface ReportPeriod {

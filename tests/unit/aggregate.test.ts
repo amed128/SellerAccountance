@@ -86,6 +86,25 @@ describe("monthlySummaries", () => {
     const sumOfMonths = months.reduce((s, m) => s + m.summary.grossRevenue, 0);
     expect(sumOfMonths).toBeCloseTo(total.grossRevenue, 2);
   });
+
+  it("buckets sourcing invoices by month alongside transactions, matching the aggregate total", () => {
+    const june = tag("r1", "DATE_RANGE", "date-range-sample-fr.csv");
+    const { transactions } = dedupeTransactions(june);
+    const invoices = [
+      { date: new Date("2026-06-05"), amountExclVat: 100, vatAmount: 20, vatTreatment: "DOMESTIC" },
+      // A month with a purchase but no sales at all must still appear.
+      { date: new Date("2026-08-01"), amountExclVat: 50, vatAmount: 10, vatTreatment: "DOMESTIC" },
+    ];
+    const months = monthlySummaries(transactions, "FR", "STANDARD", invoices);
+    const august = months.find((m) => m.month === "2026-08");
+    expect(august).toBeDefined();
+    expect(august!.summary.sourcingDeductibleVat).toBeCloseTo(10, 2);
+    expect(august!.summary.grossRevenue).toBe(0);
+
+    const total = computeVatSummary(transactions, "FR", "STANDARD", invoices);
+    const sumOfMonths = months.reduce((s, m) => s + m.summary.sourcingDeductibleVat, 0);
+    expect(sumOfMonths).toBeCloseTo(total.sourcingDeductibleVat, 2);
+  });
 });
 
 describe("hasMixedTypeOverlap", () => {

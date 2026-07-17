@@ -17,11 +17,14 @@ export async function getOverviewExportData(
   homeCountry: string = DEFAULT_HOME_COUNTRY,
   vatRegime: VatRegime = "STANDARD"
 ): Promise<OverviewExportData> {
-  const reports = await prisma.report.findMany({
-    where: { userId },
-    include: { transactions: true },
-    orderBy: { uploadedAt: "asc" },
-  });
+  const [reports, sourcingInvoices] = await Promise.all([
+    prisma.report.findMany({
+      where: { userId },
+      include: { transactions: true },
+      orderBy: { uploadedAt: "asc" },
+    }),
+    prisma.sourcingInvoice.findMany({ where: { userId } }),
+  ]);
 
   const tagged: TaggedTransaction[] = reports.flatMap((r) =>
     (r.transactions as unknown as TaggedTransaction[]).map((tx) => ({
@@ -31,8 +34,8 @@ export async function getOverviewExportData(
     }))
   );
   const { transactions } = dedupeTransactions(tagged);
-  const summary = computeVatSummary(transactions, homeCountry, vatRegime);
-  const monthly = monthlySummaries(transactions, homeCountry, vatRegime);
+  const summary = computeVatSummary(transactions, homeCountry, vatRegime, sourcingInvoices);
+  const monthly = monthlySummaries(transactions, homeCountry, vatRegime, sourcingInvoices);
 
   const dates = transactions
     .map((x) => (x.date ? new Date(x.date).getTime() : null))

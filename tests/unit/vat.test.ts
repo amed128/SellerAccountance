@@ -184,3 +184,58 @@ describe("Amazon fees reverse charge (self-assessed VAT on fees)", () => {
     expect(s.notes).not.toContain("amazonFeesReverseCharge");
   });
 });
+
+describe("sourcing invoice deduction", () => {
+  const domesticInvoice = {
+    date: new Date("2026-06-01"),
+    amountExclVat: 100,
+    vatAmount: 20,
+    vatTreatment: "DOMESTIC",
+  };
+
+  it("deducts a DOMESTIC invoice's own VAT amount for a STANDARD seller", () => {
+    const s = computeVatSummary([tx({ arrivalCountry: "FR" })], "FR", "STANDARD", [domesticInvoice]);
+    expect(s.sourcingDeductibleVat).toBeCloseTo(20, 2);
+    expect(s.sourcingNonDeductibleVat).toBe(0);
+    expect(s.vatToPay).toBeCloseTo(s.vatCollectedFr + s.vatOss - 20, 2);
+  });
+
+  it("self-assesses a REVERSE_CHARGE invoice at the home rate, ignoring the (zero) entered VAT amount", () => {
+    const s = computeVatSummary(
+      [tx({ arrivalCountry: "FR" })],
+      "FR",
+      "STANDARD",
+      [{ date: new Date("2026-06-01"), amountExclVat: 100, vatAmount: 0, vatTreatment: "REVERSE_CHARGE" }]
+    );
+    // FR rate 20% on HT 100 => 20, same as if the supplier had charged it directly
+    expect(s.sourcingDeductibleVat).toBeCloseTo(20, 2);
+  });
+
+  it("withholds IMPORT VAT from deduction even for a STANDARD seller, pending the customs document", () => {
+    const s = computeVatSummary(
+      [tx({ arrivalCountry: "FR" })],
+      "FR",
+      "STANDARD",
+      [{ date: new Date("2026-06-01"), amountExclVat: 100, vatAmount: 20, vatTreatment: "IMPORT" }]
+    );
+    expect(s.sourcingDeductibleVat).toBe(0);
+    expect(s.sourcingNonDeductibleVat).toBeCloseTo(20, 2);
+    expect(s.notes).toContain("sourcingImportVatWithheld");
+    // Non-deductible VAT must NOT reduce vatToPay — it's a cost, not a credit.
+    expect(s.vatToPay).toBeCloseTo(s.vatCollectedFr + s.vatOss, 2);
+  });
+
+  it("makes ALL sourcing VAT non-deductible for a FRANCHISE seller, regardless of treatment", () => {
+    const s = computeVatSummary([tx({ arrivalCountry: "FR" })], "FR", "FRANCHISE", [domesticInvoice]);
+    expect(s.sourcingDeductibleVat).toBe(0);
+    expect(s.sourcingNonDeductibleVat).toBeCloseTo(20, 2);
+    expect(s.notes).toContain("franchiseSourcingNotDeductible");
+  });
+
+  it("is a no-op when there are no sourcing invoices", () => {
+    const s = computeVatSummary([tx({ arrivalCountry: "FR" })], "FR", "STANDARD");
+    expect(s.sourcingDeductibleVat).toBe(0);
+    expect(s.sourcingNonDeductibleVat).toBe(0);
+    expect(s.notes).not.toContain("sourcingImportVatWithheld");
+  });
+});

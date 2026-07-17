@@ -227,4 +227,30 @@ test.describe("sourcing invoices", () => {
     await expect(page.getByText("Vérifiez les champs du formulaire")).toBeVisible();
     await expect(page.locator("tr", { hasText: "Zero Amount Supplier" })).toHaveCount(0);
   });
+
+  test("a DOMESTIC invoice's VAT shows as deductible on the overview page", async ({ page }) => {
+    await page.goto("/sourcing");
+    await page.fill("#supplier", "Deductible Test Supplier");
+    await page.fill("#date", "2026-06-01");
+    await page.fill("#sku", "SKU-DEDUCT");
+    await page.fill("#amountExclVat", "100");
+    await page.fill("#vatAmount", "20");
+    await page.fill("#amountInclVat", "120");
+    // DOMESTIC is the default-checked radio, no need to select it explicitly.
+    await Promise.all([
+      page.waitForURL(/\/sourcing\?saved=1$/),
+      page.getByRole("button", { name: "Ajouter" }).click(),
+    ]);
+
+    await page.goto("/overview");
+    await expect(page.getByText("TVA déductible (achats fournisseurs)")).toBeVisible();
+    const card = page.locator("div", { has: page.getByText("TVA déductible (achats fournisseurs)") }).first();
+    await expect(card).toContainText("20,00");
+
+    // Clean up so this invoice doesn't linger for other/future test runs.
+    await page.goto("/sourcing");
+    const row = page.locator("tr", { hasText: "Deductible Test Supplier" });
+    await row.getByRole("button", { name: /Supprimer/ }).click();
+    await expect(page.locator("tr", { hasText: "Deductible Test Supplier" })).toHaveCount(0);
+  });
 });
