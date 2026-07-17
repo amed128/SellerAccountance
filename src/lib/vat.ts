@@ -101,6 +101,9 @@ export interface VatSummary {
   // holding the customs clearance document, not just the commercial invoice,
   // which this app has no way to verify — so it's counted as non-deductible
   // until that's tracked, rather than silently overstating what's reclaimable.
+  // Self-assessed VAT on REVERSE_CHARGE sourcing invoices, due regardless of
+  // regime — mirrors feesReverseChargeVatDue exactly (see there for why).
+  sourcingReverseChargeVatDue: number;
   sourcingDeductibleVat: number;
   sourcingNonDeductibleVat: number;
   vatToPay: number; // total à décaisser (domestique + OSS + autoliquidation frais − déductible)
@@ -124,32 +127,56 @@ export type VatNoteKey =
   | "franchiseFeesReverseCharge"
   | "franchiseSourcingNotDeductible"
   | "sourcingImportVatWithheld"
+  | "sourcingReverseChargeVat"
+  | "franchiseSourcingReverseCharge"
   | "cogsIncomplete";
 
 function computeSourcingDeduction(
   invoices: SourcingInvoiceInput[],
   vatRegime: VatRegime,
   homeRate: number
-): { deductibleVat: number; nonDeductibleVat: number; hasImport: boolean } {
+): {
+  reverseChargeVatDue: number;
+  deductibleVat: number;
+  nonDeductibleVat: number;
+  domesticImportNonDeductible: number;
+  hasImport: boolean;
+} {
+  let reverseChargeVatDue = 0;
   let deductibleVat = 0;
-  let nonDeductibleVat = 0;
+  let domesticImportNonDeductible = 0;
   let hasImport = false;
 
   for (const inv of invoices) {
-    const vat =
-      inv.vatTreatment === "REVERSE_CHARGE"
-        ? Math.abs(inv.amountExclVat) * homeRate // self-assessed, invoice itself shows no VAT
-        : Math.abs(inv.vatAmount);
+    if (inv.vatTreatment === "REVERSE_CHARGE") {
+      // Self-assessed, exactly like Amazon fees: the invoice itself shows no
+      // VAT (nothing was paid to the supplier), so it's due regardless of
+      // regime. STANDARD deducts it in the same breath (net zero); FRANCHISE
+      // owes it as a real cost, same as amazonFeesReverseCharge's franchise
+      // case — franchise en base blocks deduction, not the self-assessment
+      // obligation on B2B services/goods received.
+      const vat = Math.abs(inv.amountExclVat) * homeRate;
+      reverseChargeVatDue += vat;
+      if (vatRegime === "STANDARD") deductibleVat += vat;
+      continue;
+    }
+
+    // DOMESTIC / IMPORT: VAT was already paid (to the supplier, or at
+    // customs) — never a new "due" amount, only ever a deductibility question.
+    const vat = Math.abs(inv.vatAmount);
     if (inv.vatTreatment === "IMPORT") hasImport = true;
 
     if (vatRegime === "FRANCHISE" || inv.vatTreatment === "IMPORT") {
-      nonDeductibleVat += vat;
+      domesticImportNonDeductible += vat;
     } else {
       deductibleVat += vat;
     }
   }
 
-  return { deductibleVat, nonDeductibleVat, hasImport };
+  const nonDeductibleVat =
+    domesticImportNonDeductible + (vatRegime === "FRANCHISE" ? reverseChargeVatDue : 0);
+
+  return { reverseChargeVatDue, deductibleVat, nonDeductibleVat, domesticImportNonDeductible, hasImport };
 }
 
 function classifyRegime(t: NormalizedTransaction, homeCountry: string): VatByCountry["regime"] {
@@ -229,7 +256,11 @@ export function computeVatSummary(
 
     if (unitCosts.size > 0) {
       const unitCost = t.sku ? unitCosts.get(t.sku) : undefined;
-      if (unitCost !== undefined) cogs += unitCost * t.quantity * sign;
+      // Math.abs() first: some report formats (e.g. the VAT Transactions
+      // Report) already store a negative QTY on refund rows, same as the
+      // incl/excl/vat amounts above — `sign` is the single source of
+      // direction, never the row's own sign convention.
+      if (unitCost !== undefined) cogs += unitCost * Math.abs(t.quantity) * sign;
       else hasUncostedSales = true;
     }
 
@@ -251,19 +282,26 @@ export function computeVatSummary(
   const feesReverseChargeVatDue = Math.abs(totalFees) * homeRate;
   const feesReverseChargeVatDeductible = vatRegime === "STANDARD" ? feesReverseChargeVatDue : 0;
 
-  const { deductibleVat: sourcingDeductibleVat, nonDeductibleVat: sourcingNonDeductibleVat, hasImport } =
-    computeSourcingDeduction(sourcingInvoices, vatRegime, homeRate);
+  const {
+    reverseChargeVatDue: sourcingReverseChargeVatDue,
+    deductibleVat: sourcingDeductibleVat,
+    nonDeductibleVat: sourcingNonDeductibleVat,
+    domesticImportNonDeductible,
+    hasImport,
+  } = computeSourcingDeduction(sourcingInvoices, vatRegime, homeRate);
 
   if (vatRegime === "FRANCHISE") {
     notes.push("franchiseExempt");
     if (feesReverseChargeVatDue !== 0) notes.push("franchiseFeesReverseCharge");
-    if (sourcingNonDeductibleVat !== 0) notes.push("franchiseSourcingNotDeductible");
+    if (domesticImportNonDeductible !== 0) notes.push("franchiseSourcingNotDeductible");
+    if (sourcingReverseChargeVatDue !== 0) notes.push("franchiseSourcingReverseCharge");
   } else {
     if (estimated) notes.push("estimated");
     if (entries.some((e) => e.regime === "REVERSE_CHARGE_B2B")) notes.push("b2bReverseCharge");
     if (entries.some((e) => e.regime === "EXPORT")) notes.push("exportExempt");
     if (feesReverseChargeVatDue !== 0) notes.push("amazonFeesReverseCharge");
     if (hasImport) notes.push("sourcingImportVatWithheld");
+    if (sourcingReverseChargeVatDue !== 0) notes.push("sourcingReverseChargeVat");
   }
   if (unitCosts.size > 0 && hasUncostedSales) notes.push("cogsIncomplete");
 
@@ -279,10 +317,16 @@ export function computeVatSummary(
     vatOnRefunds,
     feesReverseChargeVatDue,
     feesReverseChargeVatDeductible,
+    sourcingReverseChargeVatDue,
     sourcingDeductibleVat,
     sourcingNonDeductibleVat,
     vatToPay:
-      vatCollectedFr + vatOss + feesReverseChargeVatDue - feesReverseChargeVatDeductible - sourcingDeductibleVat,
+      vatCollectedFr +
+      vatOss +
+      feesReverseChargeVatDue -
+      feesReverseChargeVatDeductible +
+      sourcingReverseChargeVatDue -
+      sourcingDeductibleVat,
     cogs,
     grossMargin: netRevenue - cogs,
     byCountry: entries,

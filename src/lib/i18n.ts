@@ -139,6 +139,10 @@ const fr = {
         "Comme pour vos ventes, la TVA sur vos factures fournisseurs (Achats) n'est pas déductible sous le régime de la franchise en base — elle reste intégrée à votre coût.",
       sourcingImportVatWithheld:
         "La TVA à l'importation sur vos factures fournisseurs (Achats) n'est pas déduite automatiquement : la déduction nécessite le document de dédouanement, pas seulement la facture commerciale. Ajoutez-la manuellement à votre déclaration une fois ce document en votre possession.",
+      sourcingReverseChargeVat:
+        "Vos achats fournisseurs en autoliquidation intracommunautaire (Achats) sont à la fois dus et déductibles : impact net nul si vous êtes assujetti à la TVA.",
+      franchiseSourcingReverseCharge:
+        "Vos achats fournisseurs en autoliquidation intracommunautaire (Achats) restent soumis à autoliquidation de TVA malgré la franchise en base : TVA due au taux de {country} ({rate}), mais non déductible — c'est un coût réel.",
       cogsIncomplete:
         "Le calcul de la marge est incomplet : certaines ventes n'ont pas de facture fournisseur correspondante pour ce SKU. Ajoutez vos factures d'achat (Achats) pour une marge plus précise.",
     } as Record<string, string>,
@@ -396,6 +400,10 @@ const en: typeof fr = {
         "As with your sales, VAT on your supplier invoices (Purchases) isn't deductible under the small-business VAT exemption — it remains part of your cost.",
       sourcingImportVatWithheld:
         "Import VAT on your supplier invoices (Purchases) isn't deducted automatically: deduction requires the customs clearance document, not just the commercial invoice. Add it to your declaration manually once you hold that document.",
+      sourcingReverseChargeVat:
+        "Your supplier purchases under intra-EU reverse charge (Purchases) are both due and deductible: net-zero impact if you're VAT-registered.",
+      franchiseSourcingReverseCharge:
+        "Your supplier purchases under intra-EU reverse charge (Purchases) remain subject to VAT reverse charge despite the franchise exemption: VAT is due at your home rate ({country}, {rate}), but not deductible — a real cost.",
       cogsIncomplete:
         "Margin calculation is incomplete: some sales have no matching supplier invoice for that SKU. Add your purchase invoices (Purchases) for a more accurate margin.",
     },

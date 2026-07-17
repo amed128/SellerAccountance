@@ -15,7 +15,11 @@ export function formatMonth(month: string, locale: string) {
 }
 
 // Note keys whose text has {country}/{rate} placeholders to fill in.
-const NOTES_WITH_RATE_PLACEHOLDERS = new Set(["estimated", "franchiseFeesReverseCharge"]);
+const NOTES_WITH_RATE_PLACEHOLDERS = new Set([
+  "estimated",
+  "franchiseFeesReverseCharge",
+  "franchiseSourcingReverseCharge",
+]);
 
 export function formatVatNote(
   key: string,

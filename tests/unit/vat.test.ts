@@ -202,7 +202,7 @@ describe("sourcing invoice deduction", () => {
     expect(s.vatToPay).toBeCloseTo(s.vatCollectedFr + s.vatOss - 20, 2);
   });
 
-  it("self-assesses a REVERSE_CHARGE invoice at the home rate, ignoring the (zero) entered VAT amount", () => {
+  it("self-assesses a REVERSE_CHARGE invoice at the home rate for a STANDARD seller — due AND deducted, net zero", () => {
     const s = computeVatSummary(
       [tx({ arrivalCountry: "FR" })],
       "FR",
@@ -210,7 +210,29 @@ describe("sourcing invoice deduction", () => {
       [{ date: new Date("2026-06-01"), sku: "SKU-X", quantity: 1, amountExclVat: 100, vatAmount: 0, vatTreatment: "REVERSE_CHARGE" }]
     );
     // FR rate 20% on HT 100 => 20, same as if the supplier had charged it directly
+    expect(s.sourcingReverseChargeVatDue).toBeCloseTo(20, 2);
     expect(s.sourcingDeductibleVat).toBeCloseTo(20, 2);
+    expect(s.notes).toContain("sourcingReverseChargeVat");
+    // Due and deductible in the same breath — vatToPay must be unaffected,
+    // not reduced by the full 20 as if it were a pure credit.
+    expect(s.vatToPay).toBeCloseTo(s.vatCollectedFr + s.vatOss, 2);
+  });
+
+  it("still owes the self-assessed REVERSE_CHARGE VAT for a FRANCHISE seller — a real added cost, not just a note", () => {
+    const s = computeVatSummary(
+      [tx({ arrivalCountry: "FR" })],
+      "FR",
+      "FRANCHISE",
+      [{ date: new Date("2026-06-01"), sku: "SKU-X", quantity: 1, amountExclVat: 100, vatAmount: 0, vatTreatment: "REVERSE_CHARGE" }]
+    );
+    expect(s.sourcingReverseChargeVatDue).toBeCloseTo(20, 2);
+    expect(s.sourcingDeductibleVat).toBe(0);
+    expect(s.sourcingNonDeductibleVat).toBeCloseTo(20, 2);
+    expect(s.notes).toContain("franchiseSourcingReverseCharge");
+    expect(s.notes).not.toContain("franchiseSourcingNotDeductible"); // that key is for DOMESTIC/IMPORT, not this
+    // Unlike DOMESTIC/IMPORT (already paid, just not deductible), reverse
+    // charge is a NEW payment obligation — it must show up as VAT owed.
+    expect(s.vatToPay).toBeCloseTo(20, 2);
   });
 
   it("withholds IMPORT VAT from deduction even for a STANDARD seller, pending the customs document", () => {
@@ -286,6 +308,35 @@ describe("cost of goods sold and gross margin", () => {
       unitCosts
     );
     expect(s.cogs).toBeCloseTo(5, 2); // (5 * 2) - (5 * 1)
+  });
+
+  it("still reduces cogs correctly when the REFUND row's own QTY is already negative", () => {
+    // The real VAT Transactions Report parser stores QTY as-is, including
+    // its sign — a refund row genuinely has QTY "-1" in the source file
+    // (verified against samples/vat-transactions-sample.csv). Math.abs()
+    // must be applied before multiplying by `sign`, exactly like the
+    // existing incl/excl/vat handling above it, or a refund adds to cogs
+    // instead of subtracting from it.
+    const unitCosts = computeUnitCosts([skuAInvoice]);
+    const s = computeVatSummary(
+      [
+        tx({ orderId: "1", sku: "SKU-A", quantity: 2, amountExclVat: 100, vatAmount: 20, amountInclVat: 120 }),
+        tx({
+          orderId: "1",
+          type: "REFUND",
+          sku: "SKU-A",
+          quantity: -1, // negative, as the real parser produces
+          amountExclVat: 50,
+          vatAmount: 10,
+          amountInclVat: 60,
+        }),
+      ],
+      "FR",
+      "STANDARD",
+      [],
+      unitCosts
+    );
+    expect(s.cogs).toBeCloseTo(5, 2); // (5 * 2) - (5 * 1), same result regardless of the row's own sign
   });
 
   it("averages cost across several invoices for the same SKU (weighted, not a simple average)", () => {
