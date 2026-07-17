@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { dedupeTransactions, monthlySummaries, MonthlySummary, TaggedTransaction } from "@/lib/aggregate";
-import { computeVatSummary, VatSummary, VatRegime, DEFAULT_HOME_COUNTRY } from "@/lib/vat";
+import { computeVatSummary, computeUnitCosts, VatSummary, VatRegime, DEFAULT_HOME_COUNTRY } from "@/lib/vat";
 import type { NormalizedTransaction } from "@/lib/parsers/types";
 
 export interface OverviewExportData {
@@ -34,7 +34,8 @@ export async function getOverviewExportData(
     }))
   );
   const { transactions } = dedupeTransactions(tagged);
-  const summary = computeVatSummary(transactions, homeCountry, vatRegime, sourcingInvoices);
+  const unitCosts = computeUnitCosts(sourcingInvoices);
+  const summary = computeVatSummary(transactions, homeCountry, vatRegime, sourcingInvoices, unitCosts);
   const monthly = monthlySummaries(transactions, homeCountry, vatRegime, sourcingInvoices);
 
   const dates = transactions

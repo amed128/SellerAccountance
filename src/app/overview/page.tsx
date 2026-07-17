@@ -8,7 +8,7 @@ import {
   hasMixedTypeOverlap,
   TaggedTransaction,
 } from "@/lib/aggregate";
-import { computeVatSummary, EU_STANDARD_VAT_RATES } from "@/lib/vat";
+import { computeVatSummary, computeUnitCosts, EU_STANDARD_VAT_RATES } from "@/lib/vat";
 import { computeAlerts } from "@/lib/alerts";
 import { formatMoney, formatMonth, formatVatNote } from "@/lib/format";
 import AlertList from "@/components/AlertList";
@@ -60,7 +60,8 @@ export default async function OverviewPage() {
   );
   const { transactions, duplicatesRemoved } = dedupeTransactions(tagged);
   const vatRegime = user.vatRegime as "STANDARD" | "FRANCHISE";
-  const summary = computeVatSummary(transactions, user.homeCountry, vatRegime, sourcingInvoices);
+  const unitCosts = computeUnitCosts(sourcingInvoices);
+  const summary = computeVatSummary(transactions, user.homeCountry, vatRegime, sourcingInvoices, unitCosts);
   const months = monthlySummaries(transactions, user.homeCountry, vatRegime, sourcingInvoices);
   const mixedOverlap = hasMixedTypeOverlap(reports);
   const alerts = computeAlerts(transactions, months, user.homeCountry);
@@ -132,6 +133,21 @@ export default async function OverviewPage() {
         )}
       </div>
 
+      {unitCosts.size > 0 && (
+        <>
+          <h2 className="mt-8 text-lg font-semibold">{t.margin}</h2>
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <Card label={t.cogs} value={money(summary.cogs)} accent="text-red-600" sub={t.cogsSub} />
+            <Card
+              label={t.grossMargin}
+              value={money(summary.grossMargin)}
+              accent={summary.grossMargin >= 0 ? "text-green-600" : "text-red-600"}
+              sub={t.grossMarginSub}
+            />
+          </div>
+        </>
+      )}
+
       <h2 className="mt-8 text-lg font-semibold">{t.vat}</h2>
       <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
         <Card label={t.vatFr} value={money(summary.vatCollectedFr)} sub={t.vatFrSub} />
@@ -179,6 +195,7 @@ export default async function OverviewPage() {
               <th className="px-4 py-2 font-medium text-right">{t.netRevenue}</th>
               <th className="px-4 py-2 font-medium text-right">{t.fees}</th>
               <th className="px-4 py-2 font-medium text-right">{t.vatToPay}</th>
+              {unitCosts.size > 0 && <th className="px-4 py-2 font-medium text-right">{t.grossMargin}</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -189,6 +206,7 @@ export default async function OverviewPage() {
                 <td className="px-4 py-2 text-right">{money(m.netRevenue)}</td>
                 <td className="px-4 py-2 text-right">{money(m.totalFees)}</td>
                 <td className="px-4 py-2 text-right">{money(m.vatToPay)}</td>
+                {unitCosts.size > 0 && <td className="px-4 py-2 text-right">{money(m.grossMargin)}</td>}
               </tr>
             ))}
           </tbody>
