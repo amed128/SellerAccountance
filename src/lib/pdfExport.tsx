@@ -106,6 +106,15 @@ export function VatExportDocument({
             rowStyle="row"
           />
         )}
+        {s.cogs !== 0 && (
+          <>
+            <Row cells={[{ text: t.cogs, flex: 2 }, { text: money(s.cogs), right: true }]} rowStyle="row" />
+            <Row
+              cells={[{ text: t.grossMargin, flex: 2 }, { text: money(s.grossMargin), right: true }]}
+              rowStyle="row"
+            />
+          </>
+        )}
         <Row cells={[{ text: t.vatFr, flex: 2 }, { text: money(s.vatCollectedFr), right: true }]} rowStyle="row" />
         <Row cells={[{ text: t.vatOss, flex: 2 }, { text: money(s.vatOss), right: true }]} rowStyle="row" />
         {s.feesReverseChargeVatDue !== 0 && (
@@ -153,6 +162,7 @@ export function VatExportDocument({
                 { text: t.netRevenue, right: true },
                 { text: t.fees, right: true },
                 { text: t.vatToPay, right: true },
+                ...(s.cogs !== 0 ? [{ text: t.grossMargin, right: true }] : []),
               ]}
               rowStyle="headerRow"
             />
@@ -165,6 +175,7 @@ export function VatExportDocument({
                   { text: money(m.netRevenue), right: true },
                   { text: money(m.totalFees), right: true },
                   { text: money(m.vatToPay), right: true },
+                  ...(s.cogs !== 0 ? [{ text: money(m.grossMargin), right: true }] : []),
                 ]}
                 rowStyle="row"
               />

@@ -1,5 +1,5 @@
 import { NormalizedTransaction } from "./parsers/types";
-import { computeVatSummary, VatSummary, VatRegime, SourcingInvoiceInput, DEFAULT_HOME_COUNTRY } from "./vat";
+import { computeVatSummary, computeUnitCosts, VatSummary, VatRegime, SourcingInvoiceInput, DEFAULT_HOME_COUNTRY } from "./vat";
 
 export interface TaggedTransaction extends NormalizedTransaction {
   reportId: string;
@@ -94,12 +94,23 @@ export function monthlySummaries(
     else invoicesByMonth.set(month, [inv]);
   }
 
+  // Unit cost basis is cumulative across all invoices, not per-month — see
+  // computeUnitCosts' docstring. Computed once here and reused for every
+  // month bucket, unlike invoicesByMonth (correctly period-scoped, for VAT).
+  const unitCosts = computeUnitCosts(sourcingInvoices);
+
   const months = new Set([...byMonth.keys(), ...invoicesByMonth.keys()]);
   return [...months]
     .sort((a, b) => a.localeCompare(b))
     .map((month) => ({
       month,
-      summary: computeVatSummary(byMonth.get(month) ?? [], homeCountry, vatRegime, invoicesByMonth.get(month) ?? []),
+      summary: computeVatSummary(
+        byMonth.get(month) ?? [],
+        homeCountry,
+        vatRegime,
+        invoicesByMonth.get(month) ?? [],
+        unitCosts
+      ),
     }));
 }
 

@@ -52,6 +52,10 @@ export function buildVatExportCsv(input: VatExportInput, locale: Locale, d: Dict
   rows.push([t.fees, amt(s.totalFees), cur]);
   rows.push([t.netMovement, amt(s.netPayout), cur]);
   if (s.bankTransfers !== 0) rows.push([t.bankTransfers, amt(Math.abs(s.bankTransfers)), cur]);
+  if (s.cogs !== 0) {
+    rows.push([t.cogs, amt(s.cogs), cur]);
+    rows.push([t.grossMargin, amt(s.grossMargin), cur]);
+  }
   rows.push([t.vatFr, amt(s.vatCollectedFr), cur]);
   rows.push([t.vatOss, amt(s.vatOss), cur]);
   if (s.feesReverseChargeVatDue !== 0) {
@@ -67,8 +71,17 @@ export function buildVatExportCsv(input: VatExportInput, locale: Locale, d: Dict
   rows.push([]);
 
   if (input.monthly) {
+    const withMargin = s.cogs !== 0;
     rows.push([x.monthlyBreakdown]);
-    rows.push([d.overview.month, t.grossRevenue, t.netRevenue, t.fees, t.vatToPay, x.currency]);
+    rows.push([
+      d.overview.month,
+      t.grossRevenue,
+      t.netRevenue,
+      t.fees,
+      t.vatToPay,
+      ...(withMargin ? [t.grossMargin] : []),
+      x.currency,
+    ]);
     for (const { month, summary: m } of input.monthly) {
       rows.push([
         monthLabel(month, locale, d.overview.undated),
@@ -76,6 +89,7 @@ export function buildVatExportCsv(input: VatExportInput, locale: Locale, d: Dict
         amt(m.netRevenue),
         amt(m.totalFees),
         amt(m.vatToPay),
+        ...(withMargin ? [amt(m.grossMargin)] : []),
         m.currency,
       ]);
     }

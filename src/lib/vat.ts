@@ -36,9 +36,33 @@ export type VatRegime = "STANDARD" | "FRANCHISE";
 // Prisma model the same way NormalizedTransaction decouples from Transaction.
 export interface SourcingInvoiceInput {
   date: Date | null;
+  sku: string;
+  quantity: number;
   amountExclVat: number;
   vatAmount: number;
   vatTreatment: string; // DOMESTIC | REVERSE_CHARGE | IMPORT
+}
+
+/**
+ * Weighted-average HT unit cost per SKU across every recorded invoice for
+ * that SKU — not a true FIFO/lot cost, which isn't worth the complexity at
+ * this scale. Always derive this from the FULL invoice history, never a
+ * period-filtered subset: unlike VAT deduction (correctly scoped to the
+ * period the invoice was incurred in), a unit's cost basis is cumulative —
+ * inventory bought in May and sold in June still has a real cost in June.
+ */
+export function computeUnitCosts(invoices: SourcingInvoiceInput[]): Map<string, number> {
+  const bySku = new Map<string, { totalCost: number; totalQty: number }>();
+  for (const inv of invoices) {
+    if (!inv.sku || inv.quantity <= 0) continue;
+    const e = bySku.get(inv.sku) ?? { totalCost: 0, totalQty: 0 };
+    e.totalCost += inv.amountExclVat;
+    e.totalQty += inv.quantity;
+    bySku.set(inv.sku, e);
+  }
+  const unitCosts = new Map<string, number>();
+  for (const [sku, { totalCost, totalQty }] of bySku) unitCosts.set(sku, totalCost / totalQty);
+  return unitCosts;
 }
 
 export interface VatByCountry {
@@ -80,6 +104,12 @@ export interface VatSummary {
   sourcingDeductibleVat: number;
   sourcingNonDeductibleVat: number;
   vatToPay: number; // total à décaisser (domestique + OSS + autoliquidation frais − déductible)
+  // Cost of goods sold (HT), matched per-SKU against weighted-average
+  // sourcing invoice cost (see computeUnitCosts). Sales of a SKU with no
+  // matching invoice contribute 0 to cogs — margin is then understated in
+  // coverage, not wrong, and flagged via the cogsIncomplete note.
+  cogs: number;
+  grossMargin: number; // netRevenue - cogs
   byCountry: VatByCountry[];
   estimated: boolean; // true when VAT was estimated (report had no VAT columns)
   notes: VatNoteKey[]; // translation keys, resolved in the UI
@@ -93,7 +123,8 @@ export type VatNoteKey =
   | "franchiseExempt"
   | "franchiseFeesReverseCharge"
   | "franchiseSourcingNotDeductible"
-  | "sourcingImportVatWithheld";
+  | "sourcingImportVatWithheld"
+  | "cogsIncomplete";
 
 function computeSourcingDeduction(
   invoices: SourcingInvoiceInput[],
@@ -143,7 +174,8 @@ export function computeVatSummary(
   transactions: NormalizedTransaction[],
   homeCountry: string = DEFAULT_HOME_COUNTRY,
   vatRegime: VatRegime = "STANDARD",
-  sourcingInvoices: SourcingInvoiceInput[] = []
+  sourcingInvoices: SourcingInvoiceInput[] = [],
+  unitCosts: Map<string, number> = new Map()
 ): VatSummary {
   const notes: VatNoteKey[] = [];
   let estimated = false;
@@ -155,6 +187,8 @@ export function computeVatSummary(
   let bankTransfers = 0;
   let netPayout = 0;
   let vatOnRefunds = 0;
+  let cogs = 0;
+  let hasUncostedSales = false;
 
   const byCountry = new Map<string, VatByCountry>();
   const add = (country: string, regime: VatByCountry["regime"], base: number, vat: number) => {
@@ -193,6 +227,12 @@ export function computeVatSummary(
     netRevenue += excl;
     if (t.type === "REFUND") vatOnRefunds += Math.abs(t.vatAmount);
 
+    if (unitCosts.size > 0) {
+      const unitCost = t.sku ? unitCosts.get(t.sku) : undefined;
+      if (unitCost !== undefined) cogs += unitCost * t.quantity * sign;
+      else hasUncostedSales = true;
+    }
+
     const regime = classifyRegime(t, homeCountry);
     const country = t.arrivalCountry ?? homeCountry;
     // Reverse charge B2B, exports, and franchise en base: no VAT due
@@ -225,6 +265,7 @@ export function computeVatSummary(
     if (feesReverseChargeVatDue !== 0) notes.push("amazonFeesReverseCharge");
     if (hasImport) notes.push("sourcingImportVatWithheld");
   }
+  if (unitCosts.size > 0 && hasUncostedSales) notes.push("cogsIncomplete");
 
   return {
     currency: transactions[0]?.currency ?? "EUR",
@@ -242,6 +283,8 @@ export function computeVatSummary(
     sourcingNonDeductibleVat,
     vatToPay:
       vatCollectedFr + vatOss + feesReverseChargeVatDue - feesReverseChargeVatDeductible - sourcingDeductibleVat,
+    cogs,
+    grossMargin: netRevenue - cogs,
     byCountry: entries,
     estimated,
     notes,

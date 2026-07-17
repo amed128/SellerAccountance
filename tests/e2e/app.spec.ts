@@ -253,4 +253,32 @@ test.describe("sourcing invoices", () => {
     await row.getByRole("button", { name: /Supprimer/ }).click();
     await expect(page.locator("tr", { hasText: "Deductible Test Supplier" })).toHaveCount(0);
   });
+
+  test("an invoice for an actually-sold SKU unlocks the gross margin section", async ({ page }) => {
+    // SKU-RED-01 is sold in the VAT sample uploaded by an earlier test in
+    // this suite — no cost data exists for it yet, so no margin section.
+    await page.goto("/overview");
+    await expect(page.getByText("Marge brute", { exact: true })).toHaveCount(0);
+
+    await page.goto("/sourcing");
+    await page.fill("#supplier", "Margin Test Supplier");
+    await page.fill("#date", "2026-05-01");
+    await page.fill("#sku", "SKU-RED-01");
+    await page.fill("#amountExclVat", "5");
+    await page.fill("#vatAmount", "1");
+    await page.fill("#amountInclVat", "6");
+    await Promise.all([
+      page.waitForURL(/\/sourcing\?saved=1$/),
+      page.getByRole("button", { name: "Ajouter" }).click(),
+    ]);
+
+    await page.goto("/overview");
+    await expect(page.getByText("Coût des marchandises vendues", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("Marge brute", { exact: true }).first()).toBeVisible();
+
+    await page.goto("/sourcing");
+    const row = page.locator("tr", { hasText: "Margin Test Supplier" });
+    await row.getByRole("button", { name: /Supprimer/ }).click();
+    await expect(page.locator("tr", { hasText: "Margin Test Supplier" })).toHaveCount(0);
+  });
 });

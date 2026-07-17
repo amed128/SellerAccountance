@@ -104,6 +104,11 @@ const fr = {
     sourcingDeductibleVatSub: "À déduire de la TVA à payer",
     sourcingNonDeductibleVat: "TVA non déductible (achats fournisseurs)",
     sourcingNonDeductibleVatSub: "Franchise en base, ou import en attente du document de dédouanement",
+    margin: "Marge",
+    cogs: "Coût des marchandises vendues",
+    cogsSub: "Basé sur le coût moyen pondéré de vos factures fournisseurs",
+    grossMargin: "Marge brute",
+    grossMarginSub: "Chiffre d'affaires HT − coût des marchandises vendues",
     byCountry: "Détail par pays",
     country: "Pays",
     regime: "Régime",
@@ -134,6 +139,8 @@ const fr = {
         "Comme pour vos ventes, la TVA sur vos factures fournisseurs (Achats) n'est pas déductible sous le régime de la franchise en base — elle reste intégrée à votre coût.",
       sourcingImportVatWithheld:
         "La TVA à l'importation sur vos factures fournisseurs (Achats) n'est pas déduite automatiquement : la déduction nécessite le document de dédouanement, pas seulement la facture commerciale. Ajoutez-la manuellement à votre déclaration une fois ce document en votre possession.",
+      cogsIncomplete:
+        "Le calcul de la marge est incomplet : certaines ventes n'ont pas de facture fournisseur correspondante pour ce SKU. Ajoutez vos factures d'achat (Achats) pour une marge plus précise.",
     } as Record<string, string>,
   },
   alerts: {
@@ -354,6 +361,11 @@ const en: typeof fr = {
     sourcingDeductibleVatSub: "Deducted from VAT to pay",
     sourcingNonDeductibleVat: "Non-deductible VAT (supplier invoices)",
     sourcingNonDeductibleVatSub: "Franchise regime, or import pending the customs clearance document",
+    margin: "Margin",
+    cogs: "Cost of goods sold",
+    cogsSub: "Based on the weighted-average cost from your supplier invoices",
+    grossMargin: "Gross margin",
+    grossMarginSub: "Net revenue − cost of goods sold",
     byCountry: "Breakdown by country",
     country: "Country",
     regime: "Regime",
@@ -384,6 +396,8 @@ const en: typeof fr = {
         "As with your sales, VAT on your supplier invoices (Purchases) isn't deductible under the small-business VAT exemption — it remains part of your cost.",
       sourcingImportVatWithheld:
         "Import VAT on your supplier invoices (Purchases) isn't deducted automatically: deduction requires the customs clearance document, not just the commercial invoice. Add it to your declaration manually once you hold that document.",
+      cogsIncomplete:
+        "Margin calculation is incomplete: some sales have no matching supplier invoice for that SKU. Add your purchase invoices (Purchases) for a more accurate margin.",
     },
   },
   alerts: {

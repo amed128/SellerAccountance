@@ -91,9 +91,9 @@ describe("monthlySummaries", () => {
     const june = tag("r1", "DATE_RANGE", "date-range-sample-fr.csv");
     const { transactions } = dedupeTransactions(june);
     const invoices = [
-      { date: new Date("2026-06-05"), amountExclVat: 100, vatAmount: 20, vatTreatment: "DOMESTIC" },
+      { date: new Date("2026-06-05"), sku: "SKU-X", quantity: 1, amountExclVat: 100, vatAmount: 20, vatTreatment: "DOMESTIC" },
       // A month with a purchase but no sales at all must still appear.
-      { date: new Date("2026-08-01"), amountExclVat: 50, vatAmount: 10, vatTreatment: "DOMESTIC" },
+      { date: new Date("2026-08-01"), sku: "SKU-X", quantity: 1, amountExclVat: 50, vatAmount: 10, vatTreatment: "DOMESTIC" },
     ];
     const months = monthlySummaries(transactions, "FR", "STANDARD", invoices);
     const august = months.find((m) => m.month === "2026-08");
@@ -104,6 +104,45 @@ describe("monthlySummaries", () => {
     const total = computeVatSummary(transactions, "FR", "STANDARD", invoices);
     const sumOfMonths = months.reduce((s, m) => s + m.summary.sourcingDeductibleVat, 0);
     expect(sumOfMonths).toBeCloseTo(total.sourcingDeductibleVat, 2);
+  });
+
+  it("costs a sale using ALL sourcing invoices for its SKU, not just ones from the same month", () => {
+    // Bought in May, sold in June — June's cogs must still reflect May's cost,
+    // since a unit's cost basis is cumulative, not scoped to a single month.
+    const juneSale: TaggedTransaction = {
+      date: new Date("2026-06-10"),
+      type: "SALE",
+      orderId: "1",
+      sku: "SKU-A",
+      description: null,
+      quantity: 2,
+      marketplace: null,
+      arrivalCountry: "FR",
+      departCountry: "FR",
+      buyerVatNumber: null,
+      amountExclVat: 100,
+      vatRate: 0.2,
+      vatAmount: 20,
+      amountInclVat: 120,
+      fees: 0,
+      fbaFees: 0,
+      otherFees: 0,
+      total: 120,
+      currency: "EUR",
+      reportId: "r1",
+      reportType: "DATE_RANGE",
+    };
+    const mayInvoice = {
+      date: new Date("2026-05-01"),
+      sku: "SKU-A",
+      quantity: 1,
+      amountExclVat: 5,
+      vatAmount: 1,
+      vatTreatment: "DOMESTIC",
+    };
+    const months = monthlySummaries([juneSale], "FR", "STANDARD", [mayInvoice]);
+    const june = months.find((m) => m.month === "2026-06");
+    expect(june!.summary.cogs).toBeCloseTo(10, 2); // unit cost 5 * qty 2
   });
 });
 

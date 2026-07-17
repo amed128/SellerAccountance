@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { parseReportFile } from "@/lib/parsers";
-import { computeVatSummary } from "@/lib/vat";
+import { computeVatSummary, computeUnitCosts } from "@/lib/vat";
 import type { NormalizedTransaction } from "@/lib/parsers/types";
 
 const sample = (name: string) =>
@@ -188,6 +188,8 @@ describe("Amazon fees reverse charge (self-assessed VAT on fees)", () => {
 describe("sourcing invoice deduction", () => {
   const domesticInvoice = {
     date: new Date("2026-06-01"),
+    sku: "SKU-X",
+    quantity: 1,
     amountExclVat: 100,
     vatAmount: 20,
     vatTreatment: "DOMESTIC",
@@ -205,7 +207,7 @@ describe("sourcing invoice deduction", () => {
       [tx({ arrivalCountry: "FR" })],
       "FR",
       "STANDARD",
-      [{ date: new Date("2026-06-01"), amountExclVat: 100, vatAmount: 0, vatTreatment: "REVERSE_CHARGE" }]
+      [{ date: new Date("2026-06-01"), sku: "SKU-X", quantity: 1, amountExclVat: 100, vatAmount: 0, vatTreatment: "REVERSE_CHARGE" }]
     );
     // FR rate 20% on HT 100 => 20, same as if the supplier had charged it directly
     expect(s.sourcingDeductibleVat).toBeCloseTo(20, 2);
@@ -216,7 +218,7 @@ describe("sourcing invoice deduction", () => {
       [tx({ arrivalCountry: "FR" })],
       "FR",
       "STANDARD",
-      [{ date: new Date("2026-06-01"), amountExclVat: 100, vatAmount: 20, vatTreatment: "IMPORT" }]
+      [{ date: new Date("2026-06-01"), sku: "SKU-X", quantity: 1, amountExclVat: 100, vatAmount: 20, vatTreatment: "IMPORT" }]
     );
     expect(s.sourcingDeductibleVat).toBe(0);
     expect(s.sourcingNonDeductibleVat).toBeCloseTo(20, 2);
@@ -237,5 +239,84 @@ describe("sourcing invoice deduction", () => {
     expect(s.sourcingDeductibleVat).toBe(0);
     expect(s.sourcingNonDeductibleVat).toBe(0);
     expect(s.notes).not.toContain("sourcingImportVatWithheld");
+  });
+});
+
+describe("cost of goods sold and gross margin", () => {
+  const skuAInvoice = {
+    date: new Date("2026-05-01"),
+    sku: "SKU-A",
+    quantity: 1,
+    amountExclVat: 5,
+    vatAmount: 1,
+    vatTreatment: "DOMESTIC",
+  };
+
+  it("matches a sale's SKU against the weighted-average unit cost", () => {
+    const unitCosts = computeUnitCosts([skuAInvoice]);
+    const s = computeVatSummary(
+      [tx({ sku: "SKU-A", quantity: 2, amountExclVat: 100, vatAmount: 20, amountInclVat: 120 })],
+      "FR",
+      "STANDARD",
+      [],
+      unitCosts
+    );
+    expect(s.cogs).toBeCloseTo(10, 2); // unit cost 5 * qty 2
+    expect(s.grossMargin).toBeCloseTo(90, 2); // netRevenue 100 - cogs 10
+  });
+
+  it("a REFUND reduces cogs the same way it reduces revenue", () => {
+    const unitCosts = computeUnitCosts([skuAInvoice]);
+    const s = computeVatSummary(
+      [
+        tx({ orderId: "1", sku: "SKU-A", quantity: 2, amountExclVat: 100, vatAmount: 20, amountInclVat: 120 }),
+        tx({
+          orderId: "1",
+          type: "REFUND",
+          sku: "SKU-A",
+          quantity: 1,
+          amountExclVat: 50,
+          vatAmount: 10,
+          amountInclVat: 60,
+        }),
+      ],
+      "FR",
+      "STANDARD",
+      [],
+      unitCosts
+    );
+    expect(s.cogs).toBeCloseTo(5, 2); // (5 * 2) - (5 * 1)
+  });
+
+  it("averages cost across several invoices for the same SKU (weighted, not a simple average)", () => {
+    const unitCosts = computeUnitCosts([
+      { date: new Date("2026-05-01"), sku: "SKU-A", quantity: 1, amountExclVat: 4, vatAmount: 0, vatTreatment: "DOMESTIC" },
+      { date: new Date("2026-05-15"), sku: "SKU-A", quantity: 9, amountExclVat: 54, vatAmount: 0, vatTreatment: "DOMESTIC" },
+    ]);
+    // (4 + 54) / (1 + 9) = 5.8, not (4/1 + 54/9)/2 = 5
+    expect(unitCosts.get("SKU-A")).toBeCloseTo(5.8, 2);
+  });
+
+  it("flags incomplete cost coverage when a sold SKU has no matching invoice, without crashing the calc", () => {
+    const unitCosts = computeUnitCosts([skuAInvoice]);
+    const s = computeVatSummary(
+      [
+        tx({ sku: "SKU-A", quantity: 1, amountExclVat: 50, vatAmount: 10, amountInclVat: 60 }),
+        tx({ orderId: "2", sku: "SKU-UNKNOWN", quantity: 1, amountExclVat: 50, vatAmount: 10, amountInclVat: 60 }),
+      ],
+      "FR",
+      "STANDARD",
+      [],
+      unitCosts
+    );
+    expect(s.cogs).toBeCloseTo(5, 2); // only SKU-A counted
+    expect(s.notes).toContain("cogsIncomplete");
+  });
+
+  it("skips COGS entirely (no note, cogs stays 0) when no unit costs are supplied at all", () => {
+    const s = computeVatSummary([tx({ sku: "SKU-UNKNOWN" })], "FR", "STANDARD");
+    expect(s.cogs).toBe(0);
+    expect(s.grossMargin).toBeCloseTo(s.netRevenue, 2);
+    expect(s.notes).not.toContain("cogsIncomplete");
   });
 });
