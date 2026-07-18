@@ -27,11 +27,14 @@ export default function UploadForm({ d }: { d: Dict["upload"] }) {
   const [dragOver, setDragOver] = useState(false);
 
   function addFiles(list: FileList | File[]) {
+    // Copy NOW: live FileLists (input.files, dataTransfer.files) are emptied
+    // before React runs the state updater (e.g. by `input.value = ""` below)
+    const incoming = Array.from(list);
     setError(null);
     setResults(null);
     setFiles((prev) => {
       const merged = [...prev];
-      for (const f of Array.from(list)) {
+      for (const f of incoming) {
         if (merged.some((m) => m.name === f.name && m.size === f.size)) continue;
         merged.push(f);
       }

@@ -300,3 +300,15 @@ test.describe("login errors", () => {
     await expect(page.locator("#password")).toHaveValue("bad-password");
   });
 });
+
+test.describe("successive file picks", () => {
+  test("adding files one at a time stages them all (live FileList regression)", async ({ page }) => {
+    await page.goto("/");
+    const input = page.locator('input[type="file"]');
+    await input.setInputFiles(sample("date-range-sample-fr.csv"));
+    await input.setInputFiles(sample("settlement-sample.txt"));
+    await expect(page.getByText("date-range-sample-fr.csv ·")).toBeVisible();
+    await expect(page.getByText("settlement-sample.txt ·")).toBeVisible();
+    await expect(page.getByRole("button", { name: /Générer les rapports \(2 fichiers\)/ })).toBeEnabled();
+  });
+});
