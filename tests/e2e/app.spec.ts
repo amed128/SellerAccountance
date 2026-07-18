@@ -282,3 +282,21 @@ test.describe("sourcing invoices", () => {
     await expect(page.locator("tr", { hasText: "Margin Test Supplier" })).toHaveCount(0);
   });
 });
+
+test.describe("login errors", () => {
+  // Fresh context: the shared storageState is already logged in
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  test("failed login keeps the entered values for the user to edit", async ({ page }) => {
+    await page.goto("/login");
+    await page.fill("#email", "wrong@example.com");
+    await page.fill("#password", "bad-password");
+    await page.click('button[type="submit"]');
+
+    await expect(page.getByText("E-mail ou mot de passe incorrect.")).toBeVisible();
+    // No page reload, fields untouched
+    await expect(page).toHaveURL(/\/login$/);
+    await expect(page.locator("#email")).toHaveValue("wrong@example.com");
+    await expect(page.locator("#password")).toHaveValue("bad-password");
+  });
+});
