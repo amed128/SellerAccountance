@@ -91,6 +91,11 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           label={summary.vatToPay >= 0 ? t.vatToPay : t.vatToClaim}
           value={money(Math.abs(summary.vatToPay))}
           accent={summary.vatToPay >= 0 ? "text-red-600" : "text-green-600"}
+          sub={
+            user.vatRegime === "FRANCHISE" && summary.feesReverseChargeVatDue > 0
+              ? t.vatToPayFranchiseSub
+              : undefined
+          }
         />
       </div>
 

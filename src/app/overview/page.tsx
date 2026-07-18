@@ -182,6 +182,11 @@ export default async function OverviewPage() {
           label={summary.vatToPay >= 0 ? t.vatToPay : t.vatToClaim}
           value={money(Math.abs(summary.vatToPay))}
           accent={summary.vatToPay >= 0 ? "text-red-600" : "text-green-600"}
+          sub={
+            vatRegime === "FRANCHISE" && summary.feesReverseChargeVatDue > 0
+              ? t.vatToPayFranchiseSub
+              : undefined
+          }
         />
       </div>
 
@@ -194,7 +199,10 @@ export default async function OverviewPage() {
               <th className="px-4 py-2 font-medium text-right">{t.grossRevenue}</th>
               <th className="px-4 py-2 font-medium text-right">{t.netRevenue}</th>
               <th className="px-4 py-2 font-medium text-right">{t.fees}</th>
-              <th className="px-4 py-2 font-medium text-right">{t.vatToPay}</th>
+              <th className="px-4 py-2 font-medium text-right">
+                {t.vatToPay}
+                {vatRegime === "FRANCHISE" && "*"}
+              </th>
               {unitCosts.size > 0 && <th className="px-4 py-2 font-medium text-right">{t.grossMargin}</th>}
             </tr>
           </thead>
@@ -212,6 +220,9 @@ export default async function OverviewPage() {
           </tbody>
         </table>
       </div>
+      {vatRegime === "FRANCHISE" && summary.feesReverseChargeVatDue > 0 && (
+        <p className="mt-2 text-xs text-gray-500">{d.overview.monthlyVatFranchiseNote}</p>
+      )}
 
       {summary.byCountry.length > 0 && (
         <>
