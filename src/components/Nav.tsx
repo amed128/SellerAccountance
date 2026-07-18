@@ -3,6 +3,7 @@ import { getDict } from "@/lib/i18n";
 import { getSession } from "@/lib/auth";
 import { logout } from "@/app/logout/actions";
 import NavMenu from "@/components/NavMenu";
+import LoginLink from "@/components/LoginLink";
 
 const linkClass = "text-gray-600 dark:text-gray-300 hover:text-blue-600";
 const ctaClass =
@@ -48,9 +49,7 @@ export default async function Nav() {
               <Link href="/help" className={linkClass}>
                 {d.nav.help}
               </Link>
-              <Link href="/login" className={`sm:ml-auto ${ctaClass}`}>
-                {d.nav.login}
-              </Link>
+              <LoginLink label={d.nav.login} className={`sm:ml-auto ${ctaClass}`} />
             </>
           )}
         </NavMenu>
