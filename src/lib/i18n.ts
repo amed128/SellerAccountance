@@ -51,7 +51,7 @@ const fr = {
       "Des rapports de types différents couvrent la même période : les mêmes commandes peuvent y figurer avec des montants différents et être comptées deux fois. Préférez un seul type de rapport par période (idéalement le rapport de transactions).",
     reportsIncluded: "{n} rapport(s) combiné(s)",
     monthlyVatFranchiseNote:
-      "* En franchise en base, la « TVA à payer » provient uniquement de l'autoliquidation sur les frais Amazon (non déductible) — pas de TVA sur vos ventes.",
+      "* En franchise en base, la « TVA à payer » provient uniquement de l'autoliquidation (frais Amazon, achats intra-UE), non déductible — pas de TVA sur vos ventes.",
   },
   home: {
     tagline: "Comptabilité Amazon : chiffre d’affaires, frais et TVA à payer ou à récupérer.",
@@ -103,7 +103,8 @@ const fr = {
     feesReverseChargeVatSubDeductible: "Due et déductible — impact net nul",
     feesReverseChargeVatSubNotDeductible: "Due mais non déductible (franchise en base) — coût réel",
     vatToPayFranchiseSub:
-      "Uniquement l'autoliquidation sur les frais Amazon — aucune TVA sur vos ventes (franchise en base)",
+      "Uniquement l'autoliquidation (frais Amazon, achats intra-UE) — aucune TVA sur vos ventes (franchise en base)",
+    sourcingReverseChargeVat: "TVA sur achats intra-UE (autoliquidation)",
     sourcingDeductibleVat: "TVA déductible (achats fournisseurs)",
     sourcingDeductibleVatSub: "À déduire de la TVA à payer",
     sourcingNonDeductibleVat: "TVA non déductible (achats fournisseurs)",
@@ -312,7 +313,7 @@ const en: typeof fr = {
       "Reports of different types cover the same period: the same orders can appear in both with different amounts and be counted twice. Prefer a single report type per period (ideally the transactions report).",
     reportsIncluded: "{n} report(s) combined",
     monthlyVatFranchiseNote:
-      "* Under the small-business VAT exemption, “VAT to pay” comes only from reverse-charge VAT on Amazon fees (not deductible) — there is no VAT on your sales.",
+      "* Under the small-business VAT exemption, “VAT to pay” comes only from reverse-charge VAT (Amazon fees, intra-EU purchases), not deductible — there is no VAT on your sales.",
   },
   home: {
     tagline: "Amazon accounting: revenue, fees, and VAT to pay or reclaim.",
@@ -364,7 +365,8 @@ const en: typeof fr = {
     feesReverseChargeVatSubDeductible: "Due and deductible — net-zero impact",
     feesReverseChargeVatSubNotDeductible: "Due but not deductible (franchise regime) — a real cost",
     vatToPayFranchiseSub:
-      "Only reverse-charge VAT on Amazon fees — no VAT on your sales (small-business exemption)",
+      "Only reverse-charge VAT (Amazon fees, intra-EU purchases) — no VAT on your sales (small-business exemption)",
+    sourcingReverseChargeVat: "VAT on intra-EU purchases (reverse charge)",
     sourcingDeductibleVat: "Deductible VAT (supplier invoices)",
     sourcingDeductibleVatSub: "Deducted from VAT to pay",
     sourcingNonDeductibleVat: "Non-deductible VAT (supplier invoices)",

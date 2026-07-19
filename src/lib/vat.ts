@@ -103,6 +103,10 @@ export interface VatSummary {
   // until that's tracked, rather than silently overstating what's reclaimable.
   sourcingDeductibleVat: number;
   sourcingNonDeductibleVat: number;
+  // VAT self-assessed (due) on intra-EU reverse-charge purchases — the "due"
+  // side whose deductible side sits in sourcingDeductibleVat (STANDARD) or
+  // sourcingNonDeductibleVat (FRANCHISE)
+  sourcingReverseChargeVatDue: number;
   vatToPay: number; // total à décaisser (domestique + OSS + autoliquidation frais − déductible)
   // Cost of goods sold (HT), matched per-SKU against weighted-average
   // sourcing invoice cost (see computeUnitCosts). Sales of a SKU with no
@@ -130,9 +134,10 @@ function computeSourcingDeduction(
   invoices: SourcingInvoiceInput[],
   vatRegime: VatRegime,
   homeRate: number
-): { deductibleVat: number; nonDeductibleVat: number; hasImport: boolean } {
+): { deductibleVat: number; nonDeductibleVat: number; reverseChargeVatDue: number; hasImport: boolean } {
   let deductibleVat = 0;
   let nonDeductibleVat = 0;
+  let reverseChargeVatDue = 0;
   let hasImport = false;
 
   for (const inv of invoices) {
@@ -142,6 +147,10 @@ function computeSourcingDeduction(
         : Math.abs(inv.vatAmount);
     if (inv.vatTreatment === "IMPORT") hasImport = true;
 
+    // Reverse charge means the VAT is DUE by the buyer (self-assessed) — the
+    // deductible/non-deductible split below is only the other side of the entry
+    if (inv.vatTreatment === "REVERSE_CHARGE") reverseChargeVatDue += vat;
+
     if (vatRegime === "FRANCHISE" || inv.vatTreatment === "IMPORT") {
       nonDeductibleVat += vat;
     } else {
@@ -149,7 +158,7 @@ function computeSourcingDeduction(
     }
   }
 
-  return { deductibleVat, nonDeductibleVat, hasImport };
+  return { deductibleVat, nonDeductibleVat, reverseChargeVatDue, hasImport };
 }
 
 function classifyRegime(t: NormalizedTransaction, homeCountry: string): VatByCountry["regime"] {
@@ -251,8 +260,12 @@ export function computeVatSummary(
   const feesReverseChargeVatDue = Math.abs(totalFees) * homeRate;
   const feesReverseChargeVatDeductible = vatRegime === "STANDARD" ? feesReverseChargeVatDue : 0;
 
-  const { deductibleVat: sourcingDeductibleVat, nonDeductibleVat: sourcingNonDeductibleVat, hasImport } =
-    computeSourcingDeduction(sourcingInvoices, vatRegime, homeRate);
+  const {
+    deductibleVat: sourcingDeductibleVat,
+    nonDeductibleVat: sourcingNonDeductibleVat,
+    reverseChargeVatDue: sourcingReverseChargeVatDue,
+    hasImport,
+  } = computeSourcingDeduction(sourcingInvoices, vatRegime, homeRate);
 
   if (vatRegime === "FRANCHISE") {
     notes.push("franchiseExempt");
@@ -281,8 +294,14 @@ export function computeVatSummary(
     feesReverseChargeVatDeductible,
     sourcingDeductibleVat,
     sourcingNonDeductibleVat,
+    sourcingReverseChargeVatDue,
     vatToPay:
-      vatCollectedFr + vatOss + feesReverseChargeVatDue - feesReverseChargeVatDeductible - sourcingDeductibleVat,
+      vatCollectedFr +
+      vatOss +
+      feesReverseChargeVatDue -
+      feesReverseChargeVatDeductible +
+      sourcingReverseChargeVatDue -
+      sourcingDeductibleVat,
     cogs,
     grossMargin: netRevenue - cogs,
     byCountry: entries,

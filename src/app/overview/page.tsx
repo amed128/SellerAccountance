@@ -163,6 +163,17 @@ export default async function OverviewPage() {
             }
           />
         )}
+        {summary.sourcingReverseChargeVatDue !== 0 && (
+          <Card
+            label={t.sourcingReverseChargeVat}
+            value={money(summary.sourcingReverseChargeVatDue)}
+            sub={
+              vatRegime === "STANDARD"
+                ? t.feesReverseChargeVatSubDeductible
+                : t.feesReverseChargeVatSubNotDeductible
+            }
+          />
+        )}
         {summary.sourcingDeductibleVat !== 0 && (
           <Card
             label={t.sourcingDeductibleVat}

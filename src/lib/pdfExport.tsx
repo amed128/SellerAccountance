@@ -126,6 +126,15 @@ export function VatExportDocument({
             rowStyle="row"
           />
         )}
+        {s.sourcingReverseChargeVatDue !== 0 && (
+          <Row
+            cells={[
+              { text: t.sourcingReverseChargeVat, flex: 2 },
+              { text: money(s.sourcingReverseChargeVatDue), right: true },
+            ]}
+            rowStyle="row"
+          />
+        )}
         {s.sourcingDeductibleVat !== 0 && (
           <Row
             cells={[

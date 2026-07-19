@@ -211,6 +211,23 @@ describe("sourcing invoice deduction", () => {
     );
     // FR rate 20% on HT 100 => 20, same as if the supplier had charged it directly
     expect(s.sourcingDeductibleVat).toBeCloseTo(20, 2);
+    // Reverse charge = the VAT is also DUE (self-assessed): both sides must be
+    // in the summary, netting to zero for a STANDARD seller
+    expect(s.sourcingReverseChargeVatDue).toBeCloseTo(20, 2);
+    expect(s.vatToPay).toBeCloseTo(s.vatCollectedFr + s.vatOss, 2);
+  });
+
+  it("charges the REVERSE_CHARGE due side as a real cost for a FRANCHISE seller", () => {
+    const s = computeVatSummary(
+      [tx({ arrivalCountry: "FR" })],
+      "FR",
+      "FRANCHISE",
+      [{ date: new Date("2026-06-01"), sku: "SKU-X", quantity: 1, amountExclVat: 100, vatAmount: 0, vatTreatment: "REVERSE_CHARGE" }]
+    );
+    expect(s.sourcingReverseChargeVatDue).toBeCloseTo(20, 2);
+    expect(s.sourcingDeductibleVat).toBe(0);
+    // Due, not deductible: increases vatToPay (fees RC due is also in there)
+    expect(s.vatToPay).toBeCloseTo(s.feesReverseChargeVatDue + 20, 2);
   });
 
   it("withholds IMPORT VAT from deduction even for a STANDARD seller, pending the customs document", () => {
